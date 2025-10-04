@@ -70,13 +70,23 @@ class AcceptedContractsController extends Controller
         }
 
         $contracts = AcceptedContract::orderByDesc('created_at')->get()->map(function (AcceptedContract $c) {
+            // Build full name from candidate fields when available
+            $parts = array_filter([
+                $c->candidate_first_name ?? null,
+                $c->candidate_middle_name ?? null,
+                $c->candidate_last_name ?? null,
+                $c->candidate_suffix_name ?? null,
+            ]);
+            $fullName = trim(implode(' ', $parts)) ?: ($c->name ?? '');
+
             return [
                 'id' => $c->id,
-                'name' => $c->name,
-                'email' => $c->email,
-                'department' => $c->department,
-                'role' => $c->role,
-                'start_date' => optional($c->start_date)->format('Y-m-d'),
+                'name' => $fullName,
+                'email' => $c->candidate_email ?? $c->email ?? null,
+                // Department is not part of new schema; leave empty to let user choose on transform
+                'department' => '',
+                'role' => $c->candidate_job_title ?? $c->role ?? 'Employee',
+                'start_date' => ($c->offer_date ?? $c->start_date) ?: date('Y-m-d'),
             ];
         })->toArray();
 
@@ -84,7 +94,8 @@ class AcceptedContractsController extends Controller
             session()->flash('status', sprintf('Synced: %d new contract(s), %d new employee(s).', $insertedContracts, $insertedEmployees));
         }
 
-        return view('hr4.core_human.accepted_contracts', compact('contracts'));
+        $departments = \App\Models\Department::orderBy('name')->get(['id','name']);
+        return view('hr4.core_human.accepted_contracts', compact('contracts','departments'));
     }
 
     public function store(Request $request)
@@ -113,7 +124,7 @@ class AcceptedContractsController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'department' => 'required|string|max:255',
+            'department' => 'nullable|string|max:255',
             'role' => 'required|string|max:255',
             'start_date' => 'required|date',
             'email' => 'nullable|email',
@@ -124,13 +135,19 @@ class AcceptedContractsController extends Controller
             ->orWhere('name', $data['name'])
             ->exists();
         if (!$exists) {
-            Employee::create([
+            $payload = [
                 'name' => $data['name'],
                 'email' => $data['email'] ?? null,
                 'role' => $data['role'],
                 'start_date' => $data['start_date'],
                 'status' => 'Active',
-            ]);
+            ];
+            // Optionally attach department if provided and exists
+            if (!empty($data['department'])) {
+                $dept = \App\Models\Department::firstOrCreate(['name' => $data['department']]);
+                $payload['department_id'] = $dept->id;
+            }
+            Employee::create($payload);
         }
 
         return redirect()->route('employees.index')->with('status', 'Employee record created.');

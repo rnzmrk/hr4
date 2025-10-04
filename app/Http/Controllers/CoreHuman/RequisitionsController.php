@@ -65,7 +65,7 @@ class RequisitionsController extends Controller
             'title' => $data['title'],
             'openings' => (int)$data['openings'],
             'status' => $data['status'] ?? 'Open',
-            'type' => null,
+            'type' => null, 
             'arrangement' => null,
             'description' => null,
             'responsibilities' => null,

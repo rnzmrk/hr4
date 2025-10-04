@@ -12,6 +12,73 @@
     <div class="d-flex gap-2">
       <input type="text" class="form-control" placeholder="Search contracts..." style="max-width: 260px;">
     </div>
+{{-- Transform to Employee Modal --}}
+<div class="modal fade" id="transformModal" tabindex="-1" aria-labelledby="transformModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="transformModalLabel">Transform to Employee</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="{{ route('employees.transform') }}">
+        @csrf
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small text-muted">Full Name</label>
+              <input type="text" class="form-control" name="name" id="t_name" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small text-muted">Email</label>
+              <input type="email" class="form-control" name="email" id="t_email">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small text-muted">Role</label>
+              <input type="text" class="form-control" name="role" id="t_role" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small text-muted">Start Date</label>
+              <input type="date" class="form-control" name="start_date" id="t_start" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small text-muted">Department</label>
+              <select class="form-select" name="department" id="t_department">
+                <option value="">Select department (optional)</option>
+                @foreach(($departments ?? []) as $d)
+                  <option value="{{ $d->name }}">{{ $d->name }}</option>
+                @endforeach
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Employee</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const tm = document.getElementById('transformModal');
+  tm?.addEventListener('show.bs.modal', function(e){
+    const b = e.relatedTarget; if(!b) return;
+    document.getElementById('t_name').value = b.getAttribute('data-name') || '';
+    document.getElementById('t_email').value = b.getAttribute('data-email') || '';
+    document.getElementById('t_role').value = b.getAttribute('data-role') || '';
+    document.getElementById('t_start').value = b.getAttribute('data-start') || '';
+    const dep = b.getAttribute('data-department') || '';
+    const sel = document.getElementById('t_department');
+    if (sel) {
+      let matched = false;
+      [...sel.options].forEach(o => { if (o.value === dep || o.text === dep) { o.selected = true; matched = true; } });
+      if (!matched) sel.selectedIndex = 0;
+    }
+  });
+});
+</script>
     <div class="d-flex gap-2">
       <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createContractModal">
         <i class="bi bi-plus-circle me-1"></i> Create Sample Accepted Contract
@@ -64,17 +131,14 @@
               <td>{{ $c['role'] }}</td>
               <td>{{ \Illuminate\Support\Carbon::parse($c['start_date'])->format('M d, Y') }}</td>
               <td class="text-end">
-                <form method="POST" action="{{ route('employees.transform') }}" class="d-inline">
-                  @csrf
-                  <input type="hidden" name="name" value="{{ $c['name'] }}">
-                  <input type="hidden" name="email" value="{{ $c['email'] ?? '' }}">
-                  <input type="hidden" name="department" value="{{ $c['department'] }}">
-                  <input type="hidden" name="role" value="{{ $c['role'] }}">
-                  <input type="hidden" name="start_date" value="{{ $c['start_date'] }}">
-                  <button type="submit" class="btn btn-primary btn-sm">
-                    <i class="bi bi-arrow-right-circle me-1"></i> Transform to Employee
-                  </button>
-                </form>
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#transformModal"
+                  data-name="{{ $c['name'] }}"
+                  data-email="{{ $c['email'] ?? '' }}"
+                  data-role="{{ $c['role'] }}"
+                  data-start="{{ $c['start_date'] }}"
+                  data-department="{{ $c['department'] }}">
+                  <i class="bi bi-arrow-right-circle me-1"></i> Transform to Employee
+                </button>
               </td>
             </tr>
             @empty
