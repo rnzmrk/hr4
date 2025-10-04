@@ -5,6 +5,7 @@ namespace App\Http\Controllers\CoreHuman;
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\Account;
+use App\Models\Department;
 use Illuminate\Http\Request;
 
 class EmployeesController extends Controller
@@ -27,6 +28,8 @@ class EmployeesController extends Controller
         // Compatibility: employees view checks session('accounts')
         session(['accounts' => Account::select('name','email','role','account_type')->get()->toArray()]);
 
-        return view('hr4.core_human.employees', compact('employees'));
+        $departments = Department::orderBy('name')->get(['id','name']);
+
+        return view('hr4.core_human.employees', compact('employees','departments'));
     }
 }

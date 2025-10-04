@@ -24,8 +24,10 @@ Route::get('/', function () {
 
 // Departments page (Core Human)
 Route::get('/departments', [DepartmentsController::class, 'index'])->name('departments.index');
+Route::post('/departments', [DepartmentsController::class, 'store'])->name('departments.store');
 
 Route::post('/requisitions', [\App\Http\Controllers\CoreHuman\RequisitionsController::class, 'store'])->name('requisitions.store');
+Route::post('/requisitions/quick-add', [\App\Http\Controllers\CoreHuman\RequisitionsController::class, 'quickAdd'])->name('requisitions.quick_add');
 
 Route::get('/employees', [EmployeesController::class, 'index'])->name('employees.index');
 // Accepted Contracts

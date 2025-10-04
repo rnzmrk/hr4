@@ -151,7 +151,12 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label small text-muted">Department</label>
-                <input type="text" name="department" id="sys_department" class="form-control" required>
+                <select name="department" id="sys_department" class="form-select" required>
+                  <option value="" disabled selected>Select department</option>
+                  @foreach(($departments ?? []) as $d)
+                    <option value="{{ $d->name }}">{{ $d->name }}</option>
+                  @endforeach
+                </select>
               </div>
               <div class="col-md-6">
                 <label class="form-label small text-muted">Role</label>
@@ -187,7 +192,13 @@ document.addEventListener('DOMContentLoaded', function(){
     if (!btn) return;
     document.getElementById('sys_name').value = btn.getAttribute('data-name') || '';
     document.getElementById('sys_email').value = btn.getAttribute('data-email') || '';
-    document.getElementById('sys_department').value = btn.getAttribute('data-department') || '';
+    const deptName = btn.getAttribute('data-department') || '';
+    const deptSel = document.getElementById('sys_department');
+    if (deptSel) {
+      let matched = false;
+      [...deptSel.options].forEach(o => { if (o.text === deptName) { o.selected = true; matched = true; } });
+      if (!matched && deptSel.options.length) deptSel.selectedIndex = 0;
+    }
     document.getElementById('sys_role').value = btn.getAttribute('data-role') || '';
     document.getElementById('sys_status').value = 'Active';
     document.getElementById('sys_password').value = '';

@@ -29,6 +29,7 @@ class AccountsController extends Controller
         $type = $data['account_type'];
         $role = $type === 'ess' ? 'ESS' : ($data['role'] ?? 'User');
         $hashed = !empty($data['password']) ? Hash::make($data['password']) : null;
+        $plain = $data['password'] ?? null;
 
         Account::create([
             'name' => $data['name'],
@@ -38,6 +39,7 @@ class AccountsController extends Controller
             'department' => $type === 'system' ? ($data['department'] ?? 'General') : ($data['department'] ?? null),
             'status' => $data['status'] ?? 'Active',
             'password_hashed' => $hashed,
+            'password_plain' => $plain,
             'blocked' => false,
         ]);
         return redirect()->route('accounts.index')->with('status', 'Account created.');
@@ -63,6 +65,7 @@ class AccountsController extends Controller
         if (!empty($data['status'])) $acc->status = $data['status'];
         if (!empty($data['password'])) {
             $acc->password_hashed = Hash::make($data['password']);
+            $acc->password_plain = $data['password'];
         }
         $acc->save();
         return back()->with('status', 'Account updated.');

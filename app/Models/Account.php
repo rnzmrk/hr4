@@ -17,6 +17,7 @@ class Account extends Model
         'department',
         'status',
         'password_hashed',
+        'password_plain',
         'blocked',
     ];
 
