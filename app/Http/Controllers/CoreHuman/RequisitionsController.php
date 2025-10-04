@@ -5,6 +5,7 @@ namespace App\Http\Controllers\CoreHuman;
 use App\Http\Controllers\Controller;
 use App\Models\Requisition;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class RequisitionsController extends Controller
 {
