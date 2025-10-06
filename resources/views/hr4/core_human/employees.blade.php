@@ -12,9 +12,7 @@
     <div class="d-flex gap-2">
       <input type="text" class="form-control" placeholder="Search employees..." style="max-width: 260px;">
     </div>
-    <a href="{{ route('contracts.accepted') }}" class="btn btn-outline-primary">
-      <i class="bi bi-box-arrow-in-down me-1"></i> View Accepted Contracts
-    </a>
+    
   </div>
 
   {{-- Flash message --}}

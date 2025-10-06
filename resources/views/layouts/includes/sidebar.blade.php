@@ -121,7 +121,7 @@
         <li @class('nav-item')>
             <a href="#coreHumanMenu"
             role="button"
-            aria-expanded="{{ (request()->is('departments') || request()->is('employees') || request()->is('contracts/accepted') || request()->is('accounts')) ? 'true' : 'false' }}"
+            aria-expanded="{{ (request()->is('departments') || request()->is('employees') || request()->is('accounts')) ? 'true' : 'false' }}"
             aria-controls="coreHumanMenu"
             data-bs-toggle="collapse"
             @class('nav-link text-dark d-flex justify-content-between align-items-center')>
@@ -129,26 +129,20 @@
             <i @class('bi bi-chevron-down small')></i>
             </a>
 
-            <div id="coreHumanMenu" @class('collapse ps-4 ' . ((request()->is('departments') || request()->is('employees') || request()->is('contracts/accepted') || request()->is('accounts') || request()->is('benefits/*')) ? 'show' : ''))>
-            <ul @class('nav flex-column')>
+            <div id="coreHumanMenu" @class('collapse ps-4 ' . ((request()->is('departments') || request()->is('employees') || request()->is('accounts') || request()->is('benefits/*')) ? 'show' : ''))>
+                <ul @class('nav flex-column')>
                 <li @class('nav-item')>
                 <a href="{{ route('departments.index') }}"
                     @class('nav-link text-dark ' . (request()->is('departments') ? 'active' : ''))>
                     <i @class('bi bi-file-earmark-plus me-2')></i> Departments
                 </a>
-                </li>
                 <li @class('nav-item')>
                 <a href="{{ route('employees.index') }}"
                     @class('nav-link text-dark ' . (request()->is('employees') ? 'active' : ''))>
                     <i @class('bi bi-person-badge me-2')></i> Employees
                 </a>
                 </li>
-                <li @class('nav-item')>
-                <a href="{{ route('contracts.accepted') }}"
-                    @class('nav-link text-dark ' . (request()->is('contracts/accepted') ? 'active' : ''))>
-                    <i @class('bi bi-box-arrow-in-down me-2')></i> Accepted Contracts
-                </a>
-                </li>
+                
                 <li @class('nav-item')>
                 <a href="{{ route('accounts.index') }}"
                     @class('nav-link text-dark ' . (request()->is('accounts') ? 'active' : ''))>

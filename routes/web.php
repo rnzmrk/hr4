@@ -10,7 +10,6 @@ use App\Http\Controllers\Payroll\DisbursementController;
 use App\Http\Controllers\Payroll\PayslipController;
 use App\Http\Controllers\CoreHuman\EmployeesController;
 use App\Http\Controllers\CoreHuman\DepartmentsController;
-use App\Http\Controllers\CoreHuman\AcceptedContractsController;
 use App\Http\Controllers\CoreHuman\AccountsController;
 use App\Http\Controllers\Benefits\BenefitPlansController;
 use App\Http\Controllers\Benefits\EmployeeBenefitsController;
@@ -30,10 +29,7 @@ Route::post('/requisitions', [\App\Http\Controllers\CoreHuman\RequisitionsContro
 Route::post('/requisitions/quick-add', [\App\Http\Controllers\CoreHuman\RequisitionsController::class, 'quickAdd'])->name('requisitions.quick_add');
 
 Route::get('/employees', [EmployeesController::class, 'index'])->name('employees.index');
-// Accepted Contracts
-Route::get('/contracts/accepted', [AcceptedContractsController::class, 'index'])->name('contracts.accepted');
-Route::post('/contracts/sample-create', [AcceptedContractsController::class, 'store'])->name('contracts.sample_create');
-Route::post('/employees/transform', [AcceptedContractsController::class, 'transformToEmployee'])->name('employees.transform');
+// Accepted Contracts removed; flow simplified to employees only
 
 // HR Analytics
 Route::get('/hr-analytics', [HrAnalyticsController::class, 'index'])->name('hr_analytics.index');

@@ -17,10 +17,29 @@ class Employee extends Model
         'role',
         'start_date',
         'status',
+        // Extended fields from employee API
+        'first_name',
+        'middle_name',
+        'last_name',
+        'suffix_name',
+        'address',
+        'phone',
+        'age',
+        'gender',
+        'birth_date',
+        'civil_status',
+        'skills',
+        'experience',
+        'education',
+        'job_title',
+        'date_hired',
+        'external_employee_id',
     ];
 
     protected $casts = [
         'start_date' => 'date',
+        'birth_date' => 'date',
+        'date_hired' => 'date',
     ];
 
     public function department(): BelongsTo

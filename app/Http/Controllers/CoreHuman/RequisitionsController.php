@@ -14,7 +14,7 @@ class RequisitionsController extends Controller
         $validated = $request->validate([
             'requested_by' => 'required|string|max:255',
             'department' => 'required|string|max:255',
-            'requisition_title' => 'required|string|max:255',
+            'requisition_title' => 'required|string|max:255',   
             'requisition_description' => 'nullable|string',
             'requisition_type' => 'required|string|max:100',
             'requisition_arrangement' => 'nullable|string',
