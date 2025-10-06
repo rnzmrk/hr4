@@ -7,4 +7,6 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+Route::get('/employees', [App\Http\Controllers\Api\EmployeeController::class, 'index']);
+
 Route::post('/employees', [App\Http\Controllers\Api\EmployeeController::class, 'store'])->name('api.employees.store');

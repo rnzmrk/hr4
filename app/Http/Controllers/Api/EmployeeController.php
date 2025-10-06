@@ -9,6 +9,11 @@ use App\Models\Department;
 
 class EmployeeController extends Controller
 {
+    public function index()
+    {
+        return response()->json(Employee::all());
+    }
+
     public function store(Request $request)
     {
         // Accept external payload with candidate_* and offer_* keys
