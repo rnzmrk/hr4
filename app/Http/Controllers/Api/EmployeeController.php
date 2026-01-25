@@ -27,7 +27,6 @@ class EmployeeController extends Controller
                 'email' => $employee->email,
                 'phone' => $employee->phone,
                 'position' => $employee->position,
-                'role' => $employee->role,
                 'status' => $employee->status,
                 'date_hired' => $employee->date_hired,
                 'start_date' => $employee->start_date,
