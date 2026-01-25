@@ -13,8 +13,13 @@ class Department extends Model
     protected $fillable = [
         'name',
         'description',
+        'position_limits',
         'openings',
         'employee_count_override',
+    ];
+
+    protected $casts = [
+        'position_limits' => 'array',
     ];
 
     public function employees(): HasMany

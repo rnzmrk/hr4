@@ -58,7 +58,6 @@ class EmployeeController extends Controller
 
         // Persist to Employee with normalized columns
         $employee = Employee::create([
-            'name' => $fullName,
             'email' => $validated['candidate_email'] ?? null,
             'department_id' => $deptId,
             'role' => $validated['candidate_job_title'] ?? null,
@@ -78,7 +77,7 @@ class EmployeeController extends Controller
             'skills' => $validated['skills'] ?? null,
             'experience' => $validated['experience'] ?? null,
             'education' => $validated['education'] ?? null,
-            'job_title' => $validated['candidate_job_title'] ?? null,
+            'position' => $validated['candidate_position'] ?? null,
             'date_hired' => $validated['offer_date'] ?? null,
             'external_employee_id' => (string)$validated['candidate_id'],
         ]);

@@ -5,19 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Employee extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'email',
-        'department_id',
-        'role',
         'start_date',
-        'status',
-        // Extended fields from employee API
         'first_name',
         'middle_name',
         'last_name',
@@ -31,9 +26,11 @@ class Employee extends Model
         'skills',
         'experience',
         'education',
-        'job_title',
+        'position',
         'date_hired',
-        'external_employee_id',
+        'employee_status',
+        'email',
+        'department_id',
     ];
 
     protected $casts = [
@@ -42,8 +39,20 @@ class Employee extends Model
         'date_hired' => 'date',
     ];
 
+    protected $appends = ['calculated_age'];
+
+    public function getCalculatedAgeAttribute()
+    {
+        return $this->birth_date ? $this->birth_date->diffInYears(now()) : null;
+    }
+
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
+    }
+
+    public function accounts(): HasMany
+    {
+        return $this->hasMany(Account::class);
     }
 }

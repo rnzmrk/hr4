@@ -9,12 +9,8 @@ return new class extends Migration {
     {
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->index();
-            $table->string('role')->nullable();
+            $table->foreignId('employee_id')->nullable()->constrained('employees')->nullOnDelete();
             $table->enum('account_type', ['system', 'ess'])->default('system');
-            $table->string('department')->nullable();
-            $table->string('status')->default('Active');
             $table->string('password_hashed')->nullable();
             $table->boolean('blocked')->default(false);
             $table->timestamps();

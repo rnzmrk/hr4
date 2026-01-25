@@ -76,17 +76,21 @@ document.addEventListener('DOMContentLoaded', function(){
         <div class="modal-body">
           <div class="mb-3">
             <label class="form-label small text-muted">Department Name</label>
-            <input type="text" name="name" class="form-control" placeholder="e.g., Finance" required>
+            <select name="name" id="departmentName" class="form-select" required>
+              <option value="">Select Department</option>
+              <option value="Financial">Financial</option>
+              <option value="Core">Core</option>
+              <option value="Logistic">Logistic</option>
+              <option value="Human Resource">Human Resource</option>
+              <option value="Administrative">Administrative</option>
+            </select>
           </div>
-          <div class="mb-3">
-            <label class="form-label small text-muted">Employees (override)</label>
-            <input type="number" name="employee_count_override" class="form-control" min="0" value="0">
-            <div class="form-text">Optional. If set, this value will display instead of counting employees by department.</div>
-          </div>
-          
           <div class="mb-0">
-            <label class="form-label small text-muted">Description (optional)</label>
-            <textarea name="description" class="form-control" rows="2" placeholder="Short description..."></textarea>
+            <label class="form-label small text-muted">Position Limits</label>
+            <div id="positionLimitsContainer">
+              <div class="text-muted small mb-2">Set limits for each position:</div>
+              <div id="positionLimitsList"></div>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -108,58 +112,48 @@ document.addEventListener('DOMContentLoaded', function(){
       </div>
     </div>
 
-    {{-- Departments monitoring table --}}
-    @php
-        // Expect $departments from controller/route, but provide safe default
-        $list = $departments ?? [
-            ['name' => 'Human Resources', 'employee_count' => 8, 'openings' => 2, 'opening_role' => 'HR Specialist'],
-            ['name' => 'Finance', 'employee_count' => 6, 'openings' => 1, 'opening_role' => 'Accountant'],
-            ['name' => 'Marketing', 'employee_count' => 10, 'openings' => 0, 'opening_role' => null],
-            ['name' => 'Operations', 'employee_count' => 15, 'openings' => 3, 'opening_role' => 'Operations Associate'],
-        ];
-        $totalEmployees = collect($list)->sum('employee_count');
-    @endphp
-
     <div class="card">
       <div class="card-body">
         <div class="d-flex justify-content-end mb-2">
-          <span class="badge bg-primary-subtle text-primary">Total Employees: <span class="fw-semibold">{{ $totalEmployees }}</span></span>
+          <span class="badge bg-primary-subtle text-primary">Total Employees: <span class="fw-semibold"></span></span>
         </div>
         <div class="table-responsive">
           <table class="table align-middle">
             <thead>
               <tr>
                 <th>Department</th>
+                <th class="text-center">Employee Limit</th>
                 <th class="text-center">Employees</th>
-                <th class="text-center">Role</th>
                 <th class="text-center">Openings</th>
                 <th class="text-end">Action</th>
               </tr>
             </thead>
             <tbody>
-              @foreach ($list as $dept)
+              @foreach ($data as $dept)
               <tr>
                 <td class="fw-semibold">{{ $dept['name'] }}</td>
-                <td class="text-center">{{ $dept['employee_count'] }}</td>
                 <td class="text-center">
-                  @if(($dept['openings'] ?? 0) > 0 && !empty($dept['opening_role']))
-                    <span class="badge bg-info text-dark">{{ $dept['opening_role'] }}</span>
-                  @else
-                    <span class="text-muted">—</span>
-                  @endif
+                  <span class="badge bg-info fs-6">
+                    {{ $dept['employee_limit'] }}
+                  </span>
                 </td>
                 <td class="text-center">
-                  @if(($dept['openings'] ?? 0) > 0)
-                    <span class="badge bg-warning text-dark">{{ $dept['openings'] }} openings</span>
+                  <span class="badge bg-success fs-6">
+                    {{ $dept['employee_count'] }}
+                  </span>
+                </td>
+                <td class="text-center">
+                  @if($dept['openings'] > 0)
+                    <span class="badge bg-warning text-dark fs-6">{{ $dept['openings'] }} openings</span>
                   @else
-                    <span class="badge bg-secondary">No openings</span>
+                    <span class="badge bg-secondary fs-6">No openings</span>
                   @endif
                 </td>
                 <td class="text-end">
                   <div class="btn-group">
-                    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addOpeningModal" data-dept="{{ $dept['name'] }}">
-                      <i class="bi bi-plus-circle me-1"></i> Add Opening
-                    </button>
+                    <a href="{{ route('departments.show', ['departmentName' => $dept['name']]) }}" class="btn btn-outline-info btn-sm">
+                      <i class="bi bi-eye me-1"></i> View
+                    </a>
                     <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#requisitionModal" data-dept="{{ $dept['name'] }}" data-role="{{ $dept['opening_role'] ?? '' }}">
                       <i class="bi bi-file-earmark-plus me-1"></i> Request Requisition
                     </button>
@@ -193,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function(){
             <div class="col-md-6">
               <label class="form-label small text-muted">Department</label>
               <select name="department" class="form-select" required>
-                @foreach ($list as $dept)
+                @foreach ($data as $dept)
                     <option value="{{ $dept['name'] }}">{{ $dept['name'] }}</option>
                 @endforeach
               </select>
@@ -273,6 +267,141 @@ document.addEventListener('DOMContentLoaded', function () {
       if (titleInput) titleInput.value = role;
     }
   });
+});
+</script>
+
+{{-- Department Details Modal --}}
+<div class="modal fade" id="departmentDetailsModal" tabindex="-1" aria-labelledby="departmentDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title" id="departmentDetailsModalLabel"><i class="bi bi-building me-2"></i>Department Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="departmentDetailsContent">
+          <!-- Content will be loaded dynamically -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function viewDepartmentDetails(departmentName) {
+    fetch(`/departments/${encodeURIComponent(departmentName)}/details`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+            
+            let content = `
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Department</h6>
+                        <p class="fw-semibold">${data.department}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Total Capacity</h6>
+                        <p class="fw-semibold">${data.total_employees}/${data.employee_limit} Employees</p>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Available Openings</h6>
+                        <p class="fw-semibold"><span class="badge bg-success">${data.openings} openings</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Current Employees</h6>
+                        <p class="fw-semibold">${data.total_employees} employees</p>
+                    </div>
+                </div>
+            `;
+            
+            if (Object.keys(data.position_counts).length > 0) {
+                content += `
+                    <hr>
+                    <h6 class="mb-3">Employee Count by Position</h6>
+                    <div class="row">
+                `;
+                
+                for (const [position, count] of Object.entries(data.position_counts)) {
+                    content += `
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex justify-content-between align-items-center p-2 border rounded">
+                                <span>${position}</span>
+                                <span class="badge bg-primary">${count}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                content += `</div>`;
+            }
+            
+            document.getElementById('departmentDetailsContent').innerHTML = content;
+            new bootstrap.Modal(document.getElementById('departmentDetailsModal')).show();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading department details');
+        });
+}
+</script>
+
+<script>
+// Dynamic position filtering for Add Department modal
+const positionMappings = {
+    'Financial': ['Financial Staff'],
+    'Core': ['Travel Agent', 'Travel Staff'],
+    'Logistic': ['Driver', 'Fleet Manager', 'Procurement Officer', 'Logistics Staff'],
+    'Human Resource': ['Hr Manager', 'Hr Staff'],
+    'Administrative': ['Administrative Staff']
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const departmentSelect = document.getElementById('departmentName');
+
+    function updatePositions() {
+        const selectedDepartment = departmentSelect.value;
+        const positions = positionMappings[selectedDepartment] || [];
+
+        // Clear position limits
+        const positionLimitsList = document.getElementById('positionLimitsList');
+        positionLimitsList.innerHTML = '';
+        
+        // Add position limit inputs
+        positions.forEach(position => {
+            const limitDiv = document.createElement('div');
+            limitDiv.className = 'row mb-2 align-items-center';
+            limitDiv.innerHTML = `
+                <div class="col-md-6">
+                    <label class="form-label small mb-1">${position}</label>
+                </div>
+                <div class="col-md-6">
+                    <input type="number" 
+                           class="form-control form-control-sm" 
+                           name="position_limits[${position}]" 
+                           min="0" 
+                           placeholder="0"
+                           value="">
+                    <small class="text-muted">Max employees</small>
+                </div>
+            `;
+            positionLimitsList.appendChild(limitDiv);
+        });
+    }
+
+    // Update positions when department changes
+    departmentSelect.addEventListener('change', updatePositions);
+    
+    // Initialize with empty positions
+    updatePositions();
 });
 </script>
 @endsection

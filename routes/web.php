@@ -5,9 +5,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Hash;
-use App\Http\Controllers\Payroll\EmployeePayrollController;
-use App\Http\Controllers\Payroll\DisbursementController;
-use App\Http\Controllers\Payroll\PayslipController;
 use App\Http\Controllers\CoreHuman\EmployeesController;
 use App\Http\Controllers\CoreHuman\DepartmentsController;
 use App\Http\Controllers\CoreHuman\AccountsController;
@@ -24,11 +21,14 @@ Route::get('/', function () {
 // Departments page (Core Human)
 Route::get('/departments', [DepartmentsController::class, 'index'])->name('departments.index');
 Route::post('/departments', [DepartmentsController::class, 'store'])->name('departments.store');
+Route::get('/departments/{departmentName}/details', [DepartmentsController::class, 'getDepartmentDetails'])->name('departments.details');
+Route::get('/departments/{departmentName}/show', [DepartmentsController::class, 'show'])->name('departments.show');
 
 Route::post('/requisitions', [\App\Http\Controllers\CoreHuman\RequisitionsController::class, 'store'])->name('requisitions.store');
 Route::post('/requisitions/quick-add', [\App\Http\Controllers\CoreHuman\RequisitionsController::class, 'quickAdd'])->name('requisitions.quick_add');
 
 Route::get('/employees', [EmployeesController::class, 'index'])->name('employees.index');
+Route::get('/employees/{id}', [EmployeesController::class, 'show'])->name('employees.show');
 // Accepted Contracts removed; flow simplified to employees only
 
 // HR Analytics
@@ -36,7 +36,8 @@ Route::get('/hr-analytics', [HrAnalyticsController::class, 'index'])->name('hr_a
 
 // Compensation Planning
 Route::get('/compensation', [CompensationController::class, 'index'])->name('compensation.index');
-Route::post('/compensation', [CompensationController::class, 'store'])->name('compensation.store');
+Route::patch('/compensation/{id}', [CompensationController::class, 'update'])->name('compensation.update');
+Route::get('/compensation/api/rewards', [CompensationController::class, 'fetchGivenRewards'])->name('compensation.api.rewards');
 Route::get('/compensation/leaves', [LeaveController::class, 'index'])->name('compensation.leaves');
 Route::post('/compensation/leaves', [LeaveController::class, 'store'])->name('compensation.leaves.store');
 Route::post('/compensation/leaves/update', [LeaveController::class, 'update'])->name('compensation.leaves.update');
@@ -56,10 +57,3 @@ Route::post('/accounts/update', [AccountsController::class, 'update'])->name('ac
 Route::post('/accounts/block', [AccountsController::class, 'block'])->name('accounts.block');
 Route::post('/accounts/delete', [AccountsController::class, 'delete'])->name('accounts.delete');
 
-// Payroll
-Route::get('/payroll/employee', [EmployeePayrollController::class, 'index'])->name('payroll.employee');
-Route::post('/payroll/employee', [EmployeePayrollController::class, 'store'])->name('payroll.employee.store');
-Route::get('/payroll/disbursements', [DisbursementController::class, 'index'])->name('payroll.disbursements');
-Route::post('/payroll/disbursements', [DisbursementController::class, 'store'])->name('payroll.disbursements.store');
-Route::get('/payroll/payslips', [\App\Http\Controllers\Payroll\PayslipController::class, 'index'])->name('payroll.payslips');
-Route::post('/payroll/payslips', [\App\Http\Controllers\Payroll\PayslipController::class, 'store'])->name('payroll.payslips.store');

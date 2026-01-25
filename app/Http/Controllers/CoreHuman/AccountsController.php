@@ -5,14 +5,50 @@ namespace App\Http\Controllers\CoreHuman;
 use App\Http\Controllers\Controller;
 use App\Models\Account;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class AccountsController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $accounts = Account::orderByDesc('created_at')->get()->toArray();
-        return view('hr4.core_human.accounts', compact('accounts'));
+        $search = $request->input('search');
+        
+        $systemAccounts = Account::with('employee')
+            ->where('account_type', 'system')
+            ->when($search, function($query, $search) {
+                $query->where(function($q) use ($search) {
+                    $q->whereHas('employee', function($subQuery) use ($search) {
+                        $subQuery->where('first_name', 'like', "%{$search}%")
+                                 ->orWhere('last_name', 'like', "%{$search}%")
+                                 ->orWhere('email', 'like', "%{$search}%")
+                                 ->orWhere('position', 'like', "%{$search}%")
+                                 ->orWhereHas('department', function($deptQuery) use ($search) {
+                                     $deptQuery->where('name', 'like', "%{$search}%");
+                                 });
+                    });
+                });
+            })
+            ->orderByDesc('created_at')
+            ->paginate(5, ['*'], 'systemPage');
+            
+        $essAccounts = Account::with('employee')
+            ->where('account_type', 'ess')
+            ->when($search, function($query, $search) {
+                $query->where(function($q) use ($search) {
+                    $q->whereHas('employee', function($subQuery) use ($search) {
+                        $subQuery->where('first_name', 'like', "%{$search}%")
+                                 ->orWhere('last_name', 'like', "%{$search}%")
+                                 ->orWhere('email', 'like', "%{$search}%")
+                                 ->orWhere('position', 'like', "%{$search}%")
+                                 ->orWhereHas('department', function($deptQuery) use ($search) {
+                                     $deptQuery->where('name', 'like', "%{$search}%");
+                                 });
+                    });
+                });
+            })
+            ->orderByDesc('created_at')
+            ->paginate(5, ['*'], 'essPage');
+            
+        return view('hr4.core_human.accounts', compact('systemAccounts', 'essAccounts'));
     }
 
     public function store(Request $request)
@@ -21,53 +57,46 @@ class AccountsController extends Controller
             'account_type' => 'required|in:system,ess',
             'name' => 'required|string|max:255',
             'email' => 'required|email',
-            'role' => 'nullable|string|max:100',
             'department' => 'nullable|string|max:255',
-            'status' => 'nullable|string|max:50',
+            'position' => 'nullable|string|max:100',
             'password' => 'nullable|string|min:6',
         ]);
-        $type = $data['account_type'];
-        $role = $type === 'ess' ? 'ESS' : ($data['role'] ?? 'User');
-        $hashed = !empty($data['password']) ? Hash::make($data['password']) : null;
-        $plain = $data['password'] ?? null;
-
+        
+        // Find employee by name to get the employee_id
+        $employeeName = $data['name'];
+        $employee = \App\Models\Employee::whereRaw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(middle_name, ''), ' ', COALESCE(last_name, ''), ' ', COALESCE(suffix_name, '')) = ?", [$employeeName])->first();
+        
+        if (!$employee) {
+            return back()->withErrors(['name' => 'Employee not found.']);
+        }
+        
         Account::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'role' => $role,
-            'account_type' => $type,
-            'department' => $type === 'system' ? ($data['department'] ?? 'General') : ($data['department'] ?? null),
-            'status' => $data['status'] ?? 'Active',
-            'password_hashed' => $hashed,
-            'password_plain' => $plain,
+            'employee_id' => $employee->id,
+            'account_type' => $data['account_type'],
+            'password' => $data['password'] ?? null, // Store plain text password
             'blocked' => false,
         ]);
-        return redirect()->route('accounts.index')->with('status', 'Account created.');
+        return redirect()->route('employees.index')->with('status', 'Account created.');
     }
 
     public function update(Request $request)
     {
         $data = $request->validate([
-            'id' => 'required|integer|exists:accounts,id',
-            'name' => 'required|string|max:255',
-            'email' => 'required|email',
-            'role' => 'nullable|string|max:100',
-            'department' => 'nullable|string|max:255',
-            'status' => 'nullable|string|max:50',
+            'id' => 'required|integer|exists:accounts,id',  
             'password' => 'nullable|string|min:6',
         ]);
 
         $acc = Account::findOrFail($data['id']);
-        $acc->name = $data['name'];
-        $acc->email = $data['email'];
-        if (!empty($data['role'])) $acc->role = $data['role'];
-        if (!empty($data['department'])) $acc->department = $data['department'];
-        if (!empty($data['status'])) $acc->status = $data['status'];
         if (!empty($data['password'])) {
-            $acc->password_hashed = Hash::make($data['password']);
-            $acc->password_plain = $data['password'];
+            $acc->password = $data['password']; // Store plain text password
         }
         $acc->save();
+        
+        // Return JSON response for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Password updated successfully']);
+        }
+        
         return back()->with('status', 'Account updated.');
     }
 
@@ -76,7 +105,6 @@ class AccountsController extends Controller
         $data = $request->validate(['id' => 'required|integer|exists:accounts,id']);
         $acc = Account::findOrFail($data['id']);
         $acc->blocked = !$acc->blocked;
-        $acc->status = $acc->blocked ? 'Blocked' : ($acc->status ?: 'Active');
         $acc->save();
         return back()->with('status', $acc->blocked ? 'Account blocked.' : 'Account unblocked.');
     }
@@ -95,13 +123,18 @@ class AccountsController extends Controller
             'email' => 'nullable|email',
             'department' => 'nullable|string|max:255',
         ]);
+        
+        // Find employee by name to get the employee_id
+        $employeeName = $data['name'];
+        $employee = \App\Models\Employee::whereRaw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(middle_name, ''), ' ', COALESCE(last_name, ''), ' ', COALESCE(suffix_name, '')) = ?", [$employeeName])->first();
+        
+        if (!$employee) {
+            return back()->withErrors(['name' => 'Employee not found.']);
+        }
+        
         Account::create([
-            'name' => $data['name'],
-            'email' => $data['email'] ?? strtolower(str_replace(' ', '.', $data['name'])).'@example.com',
-            'role' => 'ESS',
+            'employee_id' => $employee->id,
             'account_type' => 'ess',
-            'department' => $data['department'] ?? null,
-            'status' => 'Active',
             'password_hashed' => null,
             'blocked' => false,
         ]);

@@ -47,13 +47,6 @@
             </div>
         </li>
 
-        <li @class('nav-item')>
-            <a href="{{ route('hr_analytics.index') }}"
-               @class('nav-link text-dark ' . (request()->is('hr-analytics') ? 'active' : ''))>
-               <i @class('bi bi-graph-up-arrow me-2')></i> HR Analytics
-            </a>
-        </li>
-
         <li @class('nav-item mt-2')>
             <a href="#benefitsMenuTop"
                role="button"
@@ -80,41 +73,6 @@
                         </a>
                     </li>
                 </ul>
-            </div>
-        </li>
-
-        <li @class('nav-item mt-2')>
-            <a href="#payrollMenu"
-            role="button"
-            aria-expanded="{{ (request()->is('payroll/*')) ? 'true' : 'false' }}"
-            aria-controls="payrollMenu"
-            data-bs-toggle="collapse"
-            @class('nav-link text-dark d-flex justify-content-between align-items-center')>
-            <span><i @class('bi bi-cash-coin me-2')></i> Payroll</span>
-            <i @class('bi bi-chevron-down small')></i>
-            </a>
-
-            <div id="payrollMenu" @class('collapse ps-4 ' . (request()->is('payroll/*') ? 'show' : ''))>
-            <ul @class('nav flex-column')>
-                <li @class('nav-item')>
-                <a href="{{ route('payroll.employee') }}"
-                    @class('nav-link text-dark ' . (request()->is('payroll/employee') ? 'active' : ''))>
-                    <i @class('bi bi-people me-2')></i> Employee Payrolls
-                </a>
-                </li>
-                <li @class('nav-item')>
-                <a href="{{ route('payroll.disbursements') }}"
-                    @class('nav-link text-dark ' . (request()->is('payroll/disbursements') ? 'active' : ''))>
-                    <i @class('bi bi-bank me-2')></i> Disbursements
-                </a>
-                </li>
-                <li @class('nav-item')>
-                <a href="{{ route('payroll.payslips') }}"
-                    @class('nav-link text-dark ' . (request()->is('payroll/payslips') ? 'active' : ''))>
-                    <i @class('bi bi-receipt me-2')></i> Payslips
-                </a>
-                </li>
-            </ul>
             </div>
         </li>
 

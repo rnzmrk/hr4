@@ -4,24 +4,26 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Account extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'email',
-        'role',
+        'employee_id',
         'account_type',
-        'department',
-        'status',
-        'password_hashed',
-        'password_plain',
+        'password',
+        'profile_picture',
         'blocked',
     ];
 
     protected $casts = [
         'blocked' => 'boolean',
     ];
+
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
+    }
 }
