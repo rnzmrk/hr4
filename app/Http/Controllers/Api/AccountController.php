@@ -8,15 +8,14 @@ use Illuminate\Http\Request;
 
 class AccountController extends Controller
 {
-
     public function index()
     {
         return response()->json([
             'status' => 'success',
             'message' => 'All accounts retrieved',
             'data' => [
-                'system_accounts' => Account::with('employee')->where('account_type', 'system')->get(),
-                'ess_accounts' => Account::with('employee')->where('account_type', 'ess')->get()
+                'system_accounts' => Account::with('employee.department')->where('account_type', 'system')->get(),
+                'ess_accounts' => Account::with('employee.department')->where('account_type', 'ess')->get()
             ]
         ]);
     }
@@ -26,7 +25,7 @@ class AccountController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'System accounts retrieved',
-            'data' => Account::with('employee')->where('account_type', 'system')->get()
+            'data' => Account::with('employee.department')->where('account_type', 'system')->get()
         ]);
     }
 
@@ -35,7 +34,7 @@ class AccountController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'ESS accounts retrieved',
-            'data' => Account::with('employee')->where('account_type', 'ess')->get()
+            'data' => Account::with('employee.department')->where('account_type', 'ess')->get()
         ]);
     }
 
@@ -86,7 +85,7 @@ class AccountController extends Controller
 
         return response()->json([
             'message' => 'System account updated!',
-            'data' => $account->fresh()->load('employee')
+            'data' => $account->fresh()->load('employee.department')
         ]);
     }
 
@@ -137,7 +136,7 @@ class AccountController extends Controller
 
         return response()->json([
             'message' => 'ESS account updated!',
-            'data' => $account->fresh()->load('employee')
+            'data' => $account->fresh()->load('employee.department')
         ]);
     }
 
