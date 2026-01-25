@@ -11,7 +11,49 @@ class EmployeeController extends Controller
 {
     public function index()
     {
-        return response()->json(Employee::all());
+        $employees = Employee::with('department')->get()->map(function($employee) {
+            return [
+                'id' => $employee->id,
+                'first_name' => $employee->first_name,
+                'middle_name' => $employee->middle_name,
+                'last_name' => $employee->last_name,
+                'suffix_name' => $employee->suffix_name,
+                'full_name' => trim(implode(' ', array_filter([
+                    $employee->first_name,
+                    $employee->middle_name,
+                    $employee->last_name,
+                    $employee->suffix_name
+                ]))),
+                'email' => $employee->email,
+                'phone' => $employee->phone,
+                'position' => $employee->position,
+                'role' => $employee->role,
+                'status' => $employee->status,
+                'date_hired' => $employee->date_hired,
+                'start_date' => $employee->start_date,
+                'age' => $employee->age,
+                'gender' => $employee->gender,
+                'birth_date' => $employee->birth_date,
+                'civil_status' => $employee->civil_status,
+                'address' => $employee->address,
+                'skills' => $employee->skills,
+                'experience' => $employee->experience,
+                'education' => $employee->education,
+                'external_employee_id' => $employee->external_employee_id,
+                'department' => $employee->department ? [
+                    'id' => $employee->department->id,
+                    'name' => $employee->department->name,
+                    'description' => $employee->department->description ?? null
+                ] : null,
+                'created_at' => $employee->created_at,
+                'updated_at' => $employee->updated_at
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $employees
+        ]);
     }
 
     public function store(Request $request)
@@ -83,7 +125,7 @@ class EmployeeController extends Controller
         ]);
 
         return response()->json([
-            'status' => 'success',
+            'success' => true,
             'data' => $employee,
         ], 201);
 

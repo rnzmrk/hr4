@@ -13,6 +13,7 @@ Route::post('/employees', [App\Http\Controllers\Api\EmployeeController::class, '
 
 // Department API routes
 Route::get('/departments', [App\Http\Controllers\Api\DepartmentController::class, 'index']);
+Route::get('/departments/{id}', [App\Http\Controllers\Api\DepartmentController::class, 'show']);
 
 // Account API routes
 Route::get('/accounts', [App\Http\Controllers\Api\AccountController::class, 'index']);
