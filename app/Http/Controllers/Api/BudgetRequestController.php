@@ -44,7 +44,9 @@ class BudgetRequestController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $budgetRequests = BudgetRequest::latest('date')->get();
+            $budgetRequests = BudgetRequest::latest('date')
+                ->get()
+                ->map(fn ($request) => $this->transformBudgetRequest($request));
             
             return response()->json([
                 'success' => true,
@@ -59,6 +61,22 @@ class BudgetRequestController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Mark a budget request as approved.
+     */
+    public function approve(Request $request): JsonResponse
+    {
+        return $this->changeStatus($request, 'approved');
+    }
+
+    /**
+     * Mark a budget request as rejected.
+     */
+    public function reject(Request $request): JsonResponse
+    {
+        return $this->changeStatus($request, 'rejected');
     }
 
     /**
@@ -91,7 +109,7 @@ class BudgetRequestController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $budgetRequest,
+                'data' => $this->transformBudgetRequest($budgetRequest),
                 'message' => 'Budget request created successfully',
                 'token' => $this->apiToken,
                 'request_id' => 'BR_' . str_pad($budgetRequest->id, 6, '0', STR_PAD_LEFT)
@@ -129,7 +147,7 @@ class BudgetRequestController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $budgetRequest,
+                'data' => $this->transformBudgetRequest($budgetRequest),
                 'message' => 'Budget request status updated successfully',
                 'token' => $this->apiToken,
                 'request_id' => 'BR_' . str_pad($budgetRequest->id, 6, '0', STR_PAD_LEFT),
@@ -159,7 +177,7 @@ class BudgetRequestController extends Controller
         try {
             $newToken = 'br_' . $this->generateAlphanumericToken(32);
             
-            return response()->json([
+            return response()->json([   
                 'success' => true,
                 'token' => $newToken,
                 'token_type' => 'Bearer',
@@ -242,6 +260,79 @@ class BudgetRequestController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve token information',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Normalize the budget request payload for API consumers.
+     */
+    private function transformBudgetRequest(BudgetRequest $budgetRequest): array
+    {
+        return [
+            'id' => $budgetRequest->id,
+            'details' => $budgetRequest->details,
+            'amount' => $budgetRequest->amount,
+            'status' => $budgetRequest->status,
+            'status_label' => $this->formatStatusLabel($budgetRequest->status),
+            'status_badge_class' => $this->determineStatusBadgeClass($budgetRequest->status),
+            'date' => optional($budgetRequest->date)->toDateString(),
+            'formatted_date' => optional($budgetRequest->date)->format('M d, Y'),
+            'created_at' => optional($budgetRequest->created_at)->toISOString(),
+            'updated_at' => optional($budgetRequest->updated_at)->toISOString(),
+        ];
+    }
+
+    private function formatStatusLabel(string $status): string
+    {
+        return match ($status) {
+            'pending' => 'Pending',
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+            default => ucfirst($status),
+        };
+    }
+
+    private function determineStatusBadgeClass(string $status): string
+    {
+        return match ($status) {
+            'approved' => 'success',
+            'rejected' => 'danger',
+            default => 'warning',
+        };
+    }
+
+    private function changeStatus(Request $request, string $status): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'id' => 'required|exists:budget_requests,id',
+            ], [
+                'id.required' => 'Budget request ID is required',
+                'id.exists' => 'Budget request not found',
+            ]);
+
+            $budgetRequest = BudgetRequest::findOrFail($validated['id']);
+            $budgetRequest->update(['status' => $status]);
+
+            return response()->json([
+                'success' => true,
+                'data' => $this->transformBudgetRequest($budgetRequest),
+                'message' => "Budget request {$status} successfully",
+                'token' => $this->apiToken,
+            ], 200);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => "Failed to {$status} budget request",
                 'error' => $e->getMessage()
             ], 500);
         }

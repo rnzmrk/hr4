@@ -89,7 +89,7 @@
                                             <td>{{ $request->details }}</td>
                                             <td class="text-end">₱{{ number_format($request->amount) }}</td>
                                             <td>{{ \Carbon\Carbon::parse($request->date)->format('M d, Y') }}</td>
-                                            <td>{{ getStatusBadge($request->status) }}</td>
+                                            <td>{!! getStatusBadge($request->status) !!}</td>
                                             <td>
                                                 @if($request->status === 'pending')
                                                     <button class="btn btn-sm btn-primary" onclick="openApprovalModal({{ $request->id }}, '{{ $request->details }}', {{ $request->amount }}, '{{ $request->date }}')">
@@ -97,7 +97,7 @@
                                                     </button>
                                                 @else
                                                     <button class="btn btn-sm btn-secondary" disabled>
-                                                        <i class="bi bi-check-circle me-1"></i>{{ ucfirst($request->status) }}
+                                                        <i class="bi bi-check-circle me-1"></i>{{ getStatusLabel($request->status) }}
                                                     </button>
                                                 @endif
                                             </td>
@@ -263,6 +263,15 @@ function getStatusBadge($status) {
     $label = $labels[$status] ?? ucfirst($status);
     
     return '<span class="' . $class . '">' . $label . '</span>';
+}
+
+function getStatusLabel($status) {
+    return match ($status) {
+        'pending' => 'Pending',
+        'approved' => 'Approved',
+        'rejected' => 'Rejected',
+        default => ucfirst($status),
+    };
 }
 @endphp
 @endsection
