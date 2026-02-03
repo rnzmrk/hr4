@@ -127,6 +127,32 @@ class EmployeeController extends Controller
             'success' => true,
             'data' => $employee,
         ], 201);
+    }
 
+    public function updateProfile(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'profile' => 'required|file|mimes:jpg,jpeg,png,gif|max:2048',
+        ]);
+
+        $employee = Employee::findOrFail($id);
+
+        if ($request->hasFile('profile')) {
+            $file = $request->file('profile');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $path = $file->storeAs('profiles', $filename, 'public');
+            
+            $employee->profile = $path;
+            $employee->save();
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $employee->id,
+                'profile' => $employee->profile,
+                'profile_url' => $employee->profile ? asset('storage/' . $employee->profile) : null,
+            ],
+        ]);
     }
 }

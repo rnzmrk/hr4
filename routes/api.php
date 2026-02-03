@@ -10,6 +10,7 @@ Route::get('/user', function (Request $request) {
 // Employee API routes
 Route::get('/employees', [App\Http\Controllers\Api\EmployeeController::class, 'index']);
 Route::post('/employees', [App\Http\Controllers\Api\EmployeeController::class, 'store'])->name('api.employees.store');
+Route::post('/employees/{id}/profile', [App\Http\Controllers\Api\EmployeeController::class, 'updateProfile'])->name('api.employees.profile');
 
 // Department API routes
 Route::get('/departments', [App\Http\Controllers\Api\DepartmentController::class, 'index']);
