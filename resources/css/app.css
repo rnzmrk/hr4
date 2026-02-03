@@ -75,6 +75,8 @@ body {
     border-right: 1px solid #e5e7eb;
     z-index: 1030;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
   }
 
   #sidebar.collapsed {
@@ -151,6 +153,8 @@ body {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     padding: 1rem;
     padding-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
   }
 
   #sidebar.active {
@@ -457,4 +461,39 @@ body {
 .btn-default:hover {
   background-color: #412828 !important;
   color: #fff !important;
+}
+
+/* Sidebar Profile Actions */
+.sidebar-profile-actions {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.sidebar-profile-actions .nav-link {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-profile-actions .nav-link:hover {
+  background-color: #f3f4f6;
+  color: var(--jetlouge-primary) !important;
+}
+
+.sidebar-profile-actions .nav-link.text-danger:hover {
+  background-color: #fef2f2;
+  color: #dc3545 !important;
+}
+
+.sidebar-profile-actions button.nav-link {
+  text-align: left;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.sidebar-profile-actions button.nav-link:focus {
+  outline: none;
+  box-shadow: none;
 }

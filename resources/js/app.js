@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const menuBtn = document.getElementById('menu-btn');
     const desktopToggle = document.getElementById('desktop-toggle');
     const sidebar = document.getElementById('sidebar');
-    const overlay = document.getaElementById('overlay');
+    const overlay = document.getElementById('overlay');
     const mainContent = document.getElementById('main-content');
 
     // Mobile sidebar toggle

@@ -70,7 +70,7 @@ class PayslipController extends Controller
             'payroll_id' => $data['payroll_id'],
             'issued_at' => Carbon::parse($data['issued_at']),
             'content' => $content,
-            'pdf_path' => null,
+            'pdf_path' => null, 
         ]);
 
         return redirect()->route('payroll.payslips')->with('status', 'Payslip generated.');

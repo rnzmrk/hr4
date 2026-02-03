@@ -21,3 +21,10 @@ Route::get('/accounts/system', [App\Http\Controllers\Api\AccountController::clas
 Route::get('/accounts/ess', [App\Http\Controllers\Api\AccountController::class, 'essAccounts']);
 Route::patch('/accounts/system/{id}', [App\Http\Controllers\Api\AccountController::class, 'patchSystemAccount']);
 Route::patch('/accounts/ess/{id}', [App\Http\Controllers\Api\AccountController::class, 'patchEssAccount']);
+
+// Budget Request API routes
+Route::prefix('budget-request')->group(function () {
+    Route::get('/', [App\Http\Controllers\Api\BudgetRequestController::class, 'index']);
+    Route::post('/', [App\Http\Controllers\Api\BudgetRequestController::class, 'store']);
+    Route::patch('/{id}', [App\Http\Controllers\Api\BudgetRequestController::class, 'update']);
+});

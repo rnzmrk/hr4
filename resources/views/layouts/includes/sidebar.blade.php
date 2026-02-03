@@ -3,10 +3,12 @@
 
     {{-- Profile Section --}}
     <div @class('profile-section text-center')>
-    <img src=""
-        alt="Admin Profile" class="profile-img mb-2">
-        <h6 @class('fw-semibold mb-1')>John Doe</h6>
-        <small @class('text-muted')>Travel Administrator</small>
+        <a href="{{ route('profile.index') }}" class="text-decoration-none">
+            <img src="{{ asset('images/default-avatar.png') }}"
+                alt="Admin Profile" class="profile-img mb-2">
+            <h6 @class('fw-semibold mb-1 text-dark')>{{ Auth::user()->name ?? 'John Doe' }}</h6>
+            <small @class('text-muted')>{{ Auth::user()->position ?? 'Administrator' }}</small>
+        </a>
     </div>
 
     {{-- Navigation Menu --}}
@@ -29,18 +31,53 @@
                <i @class('bi bi-chevron-down small')></i>
             </a>
 
-            <div id="compMenuTop" @class('collapse ps-4 ' . (request()->is('compensation*') ? 'show' : ''))>
+            <div id="compMenuTop" @class('collapse ps-4 ' . (request()->is('compensation*') ? 'show' : ''))">
                 <ul @class('nav flex-column')>
                     <li @class('nav-item')>
                         <a href="{{ route('compensation.index') }}"
-                           @class('nav-link text-dark ' . (request()->is('compensation') ? 'active' : ''))>
+                           @class('nav-link text-dark ' . (request()->is('compensation') ? 'active' : ''))">
                            <i @class('bi bi-sliders me-2')></i> Adjustments
                         </a>
                     </li>
+                </ul>
+            </div>
+        </li>
+
+        <li @class('nav-item mt-2')>
+            <a href="#payrollMenuTop"
+               role="button"
+               aria-expanded="{{ request()->is('payroll*') ? 'true' : 'false' }}"
+               aria-controls="payrollMenuTop"
+               data-bs-toggle="collapse"
+               @class('nav-link text-dark d-flex justify-content-between align-items-center')">
+               <span><i @class('bi bi-cash-stack me-2')></i> Payroll</span>
+               <i @class('bi bi-chevron-down small')></i>
+            </a>
+
+            <div id="payrollMenuTop" @class('collapse ps-4 ' . (request()->is('payroll*') ? 'show' : ''))">
+                <ul @class('nav flex-column')>
                     <li @class('nav-item')>
-                        <a href="{{ route('compensation.leaves') }}"
-                           @class('nav-link text-dark ' . (request()->is('compensation/leaves') ? 'active' : ''))>
-                           <i @class('bi bi-calendar2-check me-2')></i> Leaves
+                        <a href="{{ route('payroll.employee-details') }}"
+                           @class('nav-link text-dark ' . (request()->is('payroll/employee-details') ? 'active' : ''))">
+                           <i @class('bi bi-person-badge me-2')"></i> Employee Details
+                        </a>
+                    </li>
+                    <li @class('nav-item')>
+                        <a href="{{ route('payroll.attendance-record') }}"
+                           @class('nav-link text-dark ' . (request()->is('payroll/attendance-record') ? 'active' : ''))">
+                           <i @class('bi bi-calendar-check me-2')"></i> Attendance Record
+                        </a>
+                    </li>
+                    <li @class('nav-item')>
+                        <a href="{{ route('payroll.salary-computation') }}"
+                           @class('nav-link text-dark ' . (request()->is('payroll/salary-computation') ? 'active' : ''))">
+                           <i @class('bi bi-calculator me-2')"></i> Salary Computation
+                        </a>
+                    </li>
+                    <li @class('nav-item')>
+                        <a href="{{ route('payroll.approval') }}"
+                           @class('nav-link text-dark ' . (request()->is('payroll/approval') ? 'active' : ''))">
+                           <i @class('bi bi-check-circle me-2')"></i> Payroll Approval
                         </a>
                     </li>
                 </ul>
@@ -112,6 +149,12 @@
             </div>
         </li>
 
+        <li @class('nav-item mt-2')>
+            <a href="{{ route('request.index') }}"
+                @class('nav-link text-dark ' . (request()->is('request*') ? 'active' : ''))">
+                <i @class('bi bi-box-seam me-2')></i> Item Request
+            </a>
+        </li>
 
     </ul>
 

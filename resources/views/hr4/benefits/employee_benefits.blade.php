@@ -85,7 +85,7 @@
                 <label class="form-label small text-muted">Benefit Plan</label>
                 <select name="benefit_plan_id" class="form-select" required>
                   @foreach(($plans ?? []) as $p)
-                    <option value="{{ $p->id }}">{{ $p->name }} (₱{{ number_format($p->employee_share,2) }})</option>
+                    <option value="{{ $p['id'] }}">{{ $p['name'] }} (₱{{ number_format($p['employee_share'],2) }})</option>
                   @endforeach
                 </select>
               </div>

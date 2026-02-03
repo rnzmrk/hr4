@@ -13,10 +13,17 @@ use App\Http\Controllers\Benefits\EmployeeBenefitsController;
 use App\Http\Controllers\Analytics\HrAnalyticsController;
 use App\Http\Controllers\Compensation\CompensationController;
 use App\Http\Controllers\Compensation\LeaveController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Auth\LoginController;
 
 Route::get('/', function () {
     return view('hr4.dashboard');
-})->name('dashboard');
+})->name('dashboard')->middleware('auth');
+
+// Authentication routes
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Departments page (Core Human)
 Route::get('/departments', [DepartmentsController::class, 'index'])->name('departments.index');
@@ -56,4 +63,33 @@ Route::post('/accounts/from-employee', [AccountsController::class, 'fromEmployee
 Route::post('/accounts/update', [AccountsController::class, 'update'])->name('accounts.update');
 Route::post('/accounts/block', [AccountsController::class, 'block'])->name('accounts.block');
 Route::post('/accounts/delete', [AccountsController::class, 'delete'])->name('accounts.delete');
+
+// Profile Management
+Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+Route::post('/profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change_password');
+
+// Item Requests
+Route::get('/request', [\App\Http\Controllers\RequestController::class, 'index'])->name('request.index');
+Route::get('/api/items', [\App\Http\Controllers\RequestController::class, 'getItems'])->name('request.items');
+Route::post('/api/item-request', [\App\Http\Controllers\RequestController::class, 'store'])->name('request.store');
+
+// Payroll
+Route::get('/payroll/employee-details', [\App\Http\Controllers\Payroll\PayrollController::class, 'employeeDetails'])->name('payroll.employee-details');
+Route::get('/payroll/salary-computation', [\App\Http\Controllers\Payroll\PayrollController::class, 'salaryComputation'])->name('payroll.salary-computation');
+Route::get('/payroll/attendance-record', [\App\Http\Controllers\Payroll\AttendanceRecordController::class, 'index'])->name('payroll.attendance-record');
+Route::get('/payroll/payslips', [\App\Http\Controllers\Payroll\PayrollController::class, 'payslips'])->name('payroll.payslips');
+Route::get('/payroll/disbursements', [\App\Http\Controllers\Payroll\PayrollController::class, 'disbursements'])->name('payroll.disbursements');
+Route::get('/payroll/approval', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'index'])->name('payroll.approval');
+
+// Budget Requests
+Route::prefix('payroll/budget-requests')->name('payroll.budget-requests.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'index'])->name('index');
+    Route::get('/create', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'create'])->name('create');
+    Route::post('/', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'store'])->name('store');
+    Route::get('/{budgetRequest}', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'show'])->name('show');
+    Route::patch('/{budgetRequest}/status', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'updateStatus'])->name('update-status');
+    Route::delete('/{budgetRequest}', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'destroy'])->name('destroy');
+});
 
