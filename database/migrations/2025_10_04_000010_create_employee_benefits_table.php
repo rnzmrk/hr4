@@ -9,11 +9,10 @@ return new class extends Migration {
     {
         Schema::create('employee_benefits', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete();
-            $table->foreignId('benefit_plan_id')->constrained('benefit_plans')->cascadeOnDelete();
-            $table->decimal('employee_share_override', 12, 2)->nullable();
+            $table->unsignedBigInteger('employee_id');
+            $table->unsignedBigInteger('reward_id');
             $table->timestamps();
-            $table->unique(['employee_id', 'benefit_plan_id']);
+            $table->unique(['employee_id', 'reward_id']);
         });
     }
 

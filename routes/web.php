@@ -10,9 +10,11 @@ use App\Http\Controllers\CoreHuman\DepartmentsController;
 use App\Http\Controllers\CoreHuman\AccountsController;
 use App\Http\Controllers\Benefits\BenefitPlansController;
 use App\Http\Controllers\Benefits\EmployeeBenefitsController;
+use App\Http\Controllers\Benefits\RewardsController;
 use App\Http\Controllers\Analytics\HrAnalyticsController;
 use App\Http\Controllers\Compensation\CompensationController;
 use App\Http\Controllers\Compensation\LeaveController;
+use App\Http\Controllers\Compensation\SalaryAdjustmentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\LoginController;
 
@@ -50,11 +52,17 @@ Route::post('/compensation/leaves', [LeaveController::class, 'store'])->name('co
 Route::post('/compensation/leaves/update', [LeaveController::class, 'update'])->name('compensation.leaves.update');
 Route::post('/compensation/leaves/delete', [LeaveController::class, 'delete'])->name('compensation.leaves.delete');
 
+// Salary Adjustment
+Route::get('/salary-adjustment', [SalaryAdjustmentController::class, 'index'])->name('salary.adjustment.index');
+Route::put('/salary-adjustment/{id}', [SalaryAdjustmentController::class, 'update'])->name('salary.adjustment.update');
+
 // Benefits (HMO/Benefits)
 Route::get('/benefits/plans', [BenefitPlansController::class, 'index'])->name('benefits.plans');
 Route::post('/benefits/plans', [BenefitPlansController::class, 'store'])->name('benefits.plans.store');
 Route::get('/benefits/employees', [EmployeeBenefitsController::class, 'index'])->name('benefits.employee');
 Route::post('/benefits/employees', [EmployeeBenefitsController::class, 'store'])->name('benefits.employee.store');
+Route::get('/benefits/rewards', [RewardsController::class, 'index'])->name('benefits.rewards');
+Route::post('/benefits/rewards', [RewardsController::class, 'store'])->name('benefits.rewards.store');
 
 // Accounts
 Route::get('/accounts', [AccountsController::class, 'index'])->name('accounts.index');

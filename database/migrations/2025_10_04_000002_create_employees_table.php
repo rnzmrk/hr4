@@ -26,6 +26,8 @@ return new class extends Migration {
             $table->string('position')->nullable();
             $table->date('date_hired')->nullable();
             $table->enum('employee_status', ['new_hire', 'regular', 'retired'])->nullable();
+            $table->enum('role', ['superadmin', 'admin', 'user'])->default('user');
+            $table->unsignedBigInteger('salary')->nullable();
             $table->string('email')->nullable()->index();
             $table->foreignId('department_id')->nullable()->constrained('departments')->nullOnDelete();
             $table->timestamps();

@@ -34,12 +34,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     @endif
-                    
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i>
-                        Budget requests awaiting approval will be displayed here.
-                    </div>
-                    
+
                     <!-- Approval Filters -->
                     <div class="row mb-4">
                         <div class="col-md-3">
@@ -78,7 +73,6 @@
                                     <th>Amount</th>
                                     <th>Date</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="budgetRequestsBody">
@@ -90,22 +84,11 @@
                                             <td class="text-end">₱{{ number_format($request->amount) }}</td>
                                             <td>{{ \Carbon\Carbon::parse($request->date)->format('M d, Y') }}</td>
                                             <td>{!! getStatusBadge($request->status) !!}</td>
-                                            <td>
-                                                @if($request->status === 'pending')
-                                                    <button class="btn btn-sm btn-primary" onclick="openApprovalModal({{ $request->id }}, '{{ $request->details }}', {{ $request->amount }}, '{{ $request->date }}')">
-                                                        <i class="bi bi-pencil-square me-1"></i>Review
-                                                    </button>
-                                                @else
-                                                    <button class="btn btn-sm btn-secondary" disabled>
-                                                        <i class="bi bi-check-circle me-1"></i>{{ getStatusLabel($request->status) }}
-                                                    </button>
-                                                @endif
-                                            </td>
                                         </tr>
                                     @endforeach
                                 @else
                                     <tr>
-                                        <td colspan="6" class="text-center text-muted py-4">
+                                        <td colspan="5" class="text-center text-muted py-4">
                                             <i class="bi bi-inbox me-2"></i>
                                             No budget requests found.
                                         </td>

@@ -31,12 +31,14 @@ class Employee extends Model
         'employee_status',
         'email',
         'department_id',
+        'salary',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'birth_date' => 'date',
         'date_hired' => 'date',
+        'salary' => 'integer',
     ];
 
     protected $appends = ['calculated_age'];

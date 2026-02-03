@@ -5,21 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class BenefitPlan extends Model
+class Reward extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'name',
+        'description',
         'type',
-        'rate_type',
-        'active',
-        'employee_id',
-        'assigned_date',
+        'benefits',
     ];
-
-    public function employee()
-    {
-        return $this->belongsTo(Employee::class);
-    }
 }

@@ -12,16 +12,16 @@ class EmployeeBenefit extends Model
 
     protected $fillable = [
         'employee_id',
-        'benefit_plan_id',
-        'employee_share_override',
+        'reward_id',
     ];
 
-    protected $casts = [
-        'employee_share_override' => 'decimal:2',
-    ];
-
-    public function plan(): BelongsTo
+    public function employee(): BelongsTo
     {
-        return $this->belongsTo(BenefitPlan::class, 'benefit_plan_id');
+        return $this->belongsTo(Employee::class, 'employee_id');
+    }
+
+    public function reward(): BelongsTo
+    {
+        return $this->belongsTo(Reward::class, 'reward_id');
     }
 }
