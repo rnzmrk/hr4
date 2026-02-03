@@ -27,8 +27,8 @@ Route::prefix('budget-request')->group(function () {
     Route::get('/', [App\Http\Controllers\Api\BudgetRequestController::class, 'index']);
     Route::post('/', [App\Http\Controllers\Api\BudgetRequestController::class, 'store']);
     Route::patch('/{id}', [App\Http\Controllers\Api\BudgetRequestController::class, 'update']);
-    Route::post('approve', [App\Http\Controllers\Api\BudgetRequestController::class, 'approve']);
-    Route::post('reject', [App\Http\Controllers\Api\BudgetRequestController::class, 'reject']);
+    Route::match(['get', 'post'], 'approve', [App\Http\Controllers\Api\BudgetRequestController::class, 'approve']);
+    Route::match(['get', 'post'], 'reject', [App\Http\Controllers\Api\BudgetRequestController::class, 'reject']);
     
     // Token management routes
     Route::post('/token/generate', [App\Http\Controllers\Api\BudgetRequestController::class, 'generateToken']);
