@@ -56,11 +56,9 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Description</th>
-                                    <th>Employee Count</th>
                                     <th>Amount</th>
                                     <th>Request Date</th>
                                     <th>Status</th>
-                                    <th>Requested By</th>
                                     <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
@@ -69,11 +67,9 @@
                                 <tr>
                                     <td>#{{ str_pad($paymentRequest->id, 4, '0', STR_PAD_LEFT) }}</td>
                                     <td>{{ $paymentRequest->description }}</td>
-                                    <td>{{ $paymentRequest->employee_count }}</td>
                                     <td>{{ $paymentRequest->formatted_amount }}</td>
                                     <td>{{ $paymentRequest->formatted_request_date }}</td>
                                     <td>{!! $paymentRequest->status_badge !!}</td>
-                                    <td>{{ $paymentRequest->requestedBy ? $paymentRequest->requestedBy->first_name . ' ' . $paymentRequest->requestedBy->last_name : 'N/A' }}</td>
                                     <td class="text-end">
                                         <a href="{{ route('payroll.payment-requests.show', $paymentRequest) }}" class="btn btn-outline-primary btn-sm" title="View">
                                             <i class="bi bi-eye"></i>
@@ -82,7 +78,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="8" class="text-center py-4">No payment requests found.</td>
+                                    <td colspan="6" class="text-center py-4">No payment requests found.</td>
                                 </tr>
                                 @endforelse
                             </tbody>

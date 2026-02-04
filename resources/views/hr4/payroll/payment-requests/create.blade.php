@@ -43,18 +43,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="employee_count" class="form-label">Employee Count *</label>
-                                    <input type="number" class="form-control @error('employee_count') is-invalid @enderror" 
-                                           id="employee_count" name="employee_count" value="{{ old('employee_count') }}" 
-                                           placeholder="Number of employees" min="1" required>
-                                    @error('employee_count')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <div class="mb-3">
                                     <label for="amount" class="form-label">Amount (₱) *</label>
                                     <input type="number" class="form-control @error('amount') is-invalid @enderror" 
@@ -78,17 +67,14 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="row">
-                                            <div class="col-md-3">
+                                            <div class="col-md-4">
                                                 <strong>Status:</strong> <span class="badge bg-warning">Pending</span>
                                             </div>
-                                            <div class="col-md-3">
-                                                <strong>Employee Count:</strong> <span id="summary_employee_count">0</span>
-                                            </div>
-                                            <div class="col-md-3">
+                                            <div class="col-md-4">
                                                 <strong>Amount:</strong> <span id="summary_amount">₱0.00</span>
                                             </div>
-                                            <div class="col-md-3">
-                                                <strong>Per Employee:</strong> <span id="summary_per_employee">₱0.00</span>
+                                            <div class="col-md-4">
+                                                <strong>Request Date:</strong> <span id="summary_request_date">{{ now()->format('M d, Y') }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -119,17 +105,12 @@
 <script>
 // Update summary in real-time
 function updateSummary() {
-    const employeeCount = parseInt(document.getElementById('employee_count').value) || 0;
     const amount = parseFloat(document.getElementById('amount').value) || 0;
-    const perEmployee = employeeCount > 0 ? amount / employeeCount : 0;
     
-    document.getElementById('summary_employee_count').textContent = employeeCount;
     document.getElementById('summary_amount').textContent = '₱' + amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    document.getElementById('summary_per_employee').textContent = '₱' + perEmployee.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 }
 
 // Add event listeners
-document.getElementById('employee_count').addEventListener('input', updateSummary);
 document.getElementById('amount').addEventListener('input', updateSummary);
 
 // Initialize summary on page load
@@ -140,19 +121,6 @@ document.getElementById('amount').addEventListener('blur', function() {
     const value = parseFloat(this.value);
     if (!isNaN(value)) {
         this.value = value.toFixed(2);
-    }
-});
-
-// Auto-calculate amount if employee count and per-employee amount are known
-document.getElementById('employee_count').addEventListener('change', function() {
-    const employeeCount = parseInt(this.value);
-    const amountInput = document.getElementById('amount');
-    
-    if (employeeCount > 0 && !amountInput.value) {
-        // You could set a default per-employee amount here if needed
-        // const defaultPerEmployee = 1000;
-        // amountInput.value = (employeeCount * defaultPerEmployee).toFixed(2);
-        updateSummary();
     }
 });
 </script>

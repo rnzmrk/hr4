@@ -36,18 +36,8 @@
                                         <div class="col-8">{{ $paymentRequest->description }}</div>
                                     </div>
                                     <div class="row mb-2">
-                                        <div class="col-4"><strong>Employee Count:</strong></div>
-                                        <div class="col-8">{{ $paymentRequest->employee_count }}</div>
-                                    </div>
-                                    <div class="row mb-2">
                                         <div class="col-4"><strong>Amount:</strong></div>
                                         <div class="col-8">{{ $paymentRequest->formatted_amount }}</div>
-                                    </div>
-                                    <div class="row mb-2">
-                                        <div class="col-4"><strong>Per Employee:</strong></div>
-                                        <div class="col-8">
-                                            {{ $paymentRequest->employee_count > 0 ? '₱' . number_format($paymentRequest->amount / $paymentRequest->employee_count, 2) : '₱0.00' }}
-                                        </div>
                                     </div>
                                     <div class="row mb-2">
                                         <div class="col-4"><strong>Request Date:</strong></div>
@@ -76,16 +66,6 @@
                                     </h6>
                                 </div>
                                 <div class="card-body">
-                                    <div class="row mb-2">
-                                        <div class="col-4"><strong>Requested By:</strong></div>
-                                        <div class="col-8">
-                                            @if($paymentRequest->requestedBy)
-                                                {{ $paymentRequest->requestedBy->first_name }} {{ $paymentRequest->requestedBy->last_name }}
-                                            @else
-                                                N/A
-                                            @endif
-                                        </div>
-                                    </div>
                                     <div class="row mb-2">
                                         <div class="col-4"><strong>Created:</strong></div>
                                         <div class="col-8">{{ $paymentRequest->created_at->format('M d, Y h:i A') }}</div>
