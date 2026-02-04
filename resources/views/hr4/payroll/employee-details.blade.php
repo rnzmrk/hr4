@@ -52,88 +52,31 @@
                                     <th>Position</th>
                                     <th>Salary</th>
                                     <th>Benefits</th>
-                                    <th>Incentives</th>
                                     <th>ATM Number</th>
                                     <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="employeeTableBody">
-                                <!-- Sample employee data -->
+                                @forelse($employees as $employee)
                                 <tr>
-                                    <td>EMP001</td>
-                                    <td>Juan Dela Cruz</td>
-                                    <td>IT</td>
-                                    <td>Software Engineer</td>
-                                    <td>₱45,000.00</td>
-                                    <td>SSS, PhilHealth, Pag-IBIG</td>
-                                    <td>₱5,000.00</td>
-                                    <td>1234-5678-9012</td>
+                                    <td>{{ $employee['employee_id'] }}</td>
+                                    <td>{{ $employee['name'] }}</td>
+                                    <td>{{ $employee['department'] }}</td>
+                                    <td>{{ $employee['position'] }}</td>
+                                    <td>{{ $employee['salary'] }}</td>
+                                    <td>{{ $employee['benefits'] }}</td>
+                                    <td>{{ $employee['atm_number'] }}</td>
                                     <td class="text-end">
-                                        <button type="button" class="btn btn-outline-primary btn-sm me-1" title="View">
+                                        <button type="button" class="btn btn-outline-primary btn-sm me-1 view-employee" data-id="{{ $employee['id'] }}" title="View">
                                             <i class="bi bi-eye"></i>
                                         </button>
                                     </td>
                                 </tr>
+                                @empty
                                 <tr>
-                                    <td>EMP002</td>
-                                    <td>Maria Santos</td>
-                                    <td>Human Resources</td>
-                                    <td>HR Manager</td>
-                                    <td>₱55,000.00</td>
-                                    <td>SSS, PhilHealth, Pag-IBIG, HMO</td>
-                                    <td>₱7,500.00</td>
-                                    <td>2345-6789-0123</td>
-                                    <td class="text-end">
-                                        <button type="button" class="btn btn-outline-primary btn-sm me-1" title="View">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                    </td>
+                                    <td colspan="8" class="text-center py-4">No employees found.</td>
                                 </tr>
-                                <tr>
-                                    <td>EMP003</td>
-                                    <td>Jose Reyes</td>
-                                    <td>Finance</td>
-                                    <td>Accountant</td>
-                                    <td>₱40,000.00</td>
-                                    <td>SSS, PhilHealth, Pag-IBIG</td>
-                                    <td>₱3,000.00</td>
-                                    <td>3456-7890-1234</td>
-                                    <td class="text-end">
-                                        <button type="button" class="btn btn-outline-primary btn-sm me-1" title="View">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>EMP004</td>
-                                    <td>Ana Garcia</td>
-                                    <td>Marketing</td>
-                                    <td>Marketing Manager</td>
-                                    <td>₱48,000.00</td>
-                                    <td>SSS, PhilHealth, Pag-IBIG, HMO</td>
-                                    <td>₱6,000.00</td>
-                                    <td>4567-8901-2345</td>
-                                    <td class="text-end">
-                                        <button type="button" class="btn btn-outline-primary btn-sm me-1" title="View">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>EMP005</td>
-                                    <td>Carlos Rodriguez</td>
-                                    <td>Sales</td>
-                                    <td>Sales Executive</td>
-                                    <td>₱35,000.00</td>
-                                    <td>SSS, PhilHealth, Pag-IBIG</td>
-                                    <td>₱2,500.00</td>
-                                    <td>5678-9012-3456</td>
-                                    <td class="text-end">
-                                        <button type="button" class="btn btn-outline-primary btn-sm me-1" title="View">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                    </td>
-                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -151,7 +94,7 @@
                 <h5 class="modal-title">
                     <i class="bi bi-person-badge me-2"></i>Employee Details
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="closeManualModal()"></button>
             </div>
             <div class="modal-body">
                 <div class="row mb-4">
@@ -197,10 +140,6 @@
                                 <div class="row">
                                     <div class="col-6"><strong>Salary:</strong></div>
                                     <div class="col-6" id="modalSalary">-</div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6"><strong>Incentives:</strong></div>
-                                    <div class="col-6" id="modalIncentives">-</div>
                                 </div>
                                 <div class="row">
                                     <div class="col-6"><strong>Total Earnings:</strong></div>
@@ -250,7 +189,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="closeManualModal()">
                     <i class="bi bi-x-circle me-1"></i>Close
                 </button>
                 <button type="button" class="btn btn-primary" id="printEmployee">
@@ -268,43 +207,47 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add click handlers to all view buttons
     function setupButtonHandlers() {
-        const viewButtons = document.querySelectorAll('button[title="View"]');
+        const viewButtons = document.querySelectorAll('.view-employee');
         
         console.log('Found view buttons:', viewButtons.length);
         
         // Handle view buttons
-        viewButtons.forEach((button, index) => {
+        viewButtons.forEach((button) => {
             button.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('View button clicked:', index);
                 
-                // Get data from table row
-                const row = this.closest('tr');
-                if (!row) {
-                    console.error('Could not find parent row');
+                const employeeId = this.dataset.id;
+                console.log('View button clicked for employee ID:', employeeId);
+                
+                if (!employeeId) {
+                    console.error('No employee ID found on button');
+                    showNotification('Employee ID not found', 'error');
                     return;
                 }
                 
-                const cells = row.cells;
-                const employeeRecord = {
-                    employee_id: cells[0].textContent.trim(),
-                    employee_name: cells[1].textContent.trim(),
-                    department: cells[2].textContent.trim(),
-                    position: cells[3].textContent.trim(),
-                    salary: cells[4].textContent.trim(),
-                    benefits: cells[5].textContent.trim(),
-                    incentives: cells[6].textContent.trim(),
-                    atm_number: cells[7].textContent.trim()
-                };
-                
-                console.log('Employee record from table:', employeeRecord);
-                
-                // Show detailed view modal
-                showEmployeeDetails(employeeRecord);
-                
-                // Show notification
-                showNotification(`Viewing details for ${employeeRecord.employee_name}`, 'info');
+                // Fetch employee details from API
+                fetch(`/payroll/employee-details/${employeeId}`)
+                    .then(response => {
+                        console.log('Fetch response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Employee data from API:', data);
+                        if (data.error) {
+                            showNotification(data.error, 'error');
+                            return;
+                        }
+                        showEmployeeDetails(data);
+                        showNotification(`Viewing details for ${data.name}`, 'info');
+                    })
+                    .catch(error => {
+                        console.error('Error fetching employee details:', error);
+                        showNotification('Error fetching employee details: ' + error.message, 'error');
+                    });
             });
         });
     }
@@ -315,29 +258,86 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Show employee details modal
 function showEmployeeDetails(employee) {
-    // Calculate total earnings (salary + incentives)
-    const salaryValue = parseFloat(employee.salary.replace(/[₱,]/g, ''));
-    const incentivesValue = parseFloat(employee.incentives.replace(/[₱,]/g, ''));
-    const totalEarnings = salaryValue + incentivesValue;
+    console.log('Showing employee details for:', employee);
     
     // Update modal content
-    document.getElementById('modalEmployeeId').textContent = employee.employee_id;
-    document.getElementById('modalEmployeeName').textContent = employee.employee_name;
-    document.getElementById('modalDepartment').textContent = employee.department;
-    document.getElementById('modalPosition').textContent = employee.position;
-    document.getElementById('modalAtmNumber').textContent = employee.atm_number;
-    document.getElementById('modalSalary').textContent = employee.salary;
-    document.getElementById('modalIncentives').textContent = employee.incentives;
-    document.getElementById('modalTotalEarnings').textContent = '₱' + totalEarnings.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const modalEmployeeId = document.getElementById('modalEmployeeId');
+    const modalEmployeeName = document.getElementById('modalEmployeeName');
+    const modalDepartment = document.getElementById('modalDepartment');
+    const modalPosition = document.getElementById('modalPosition');
+    const modalAtmNumber = document.getElementById('modalAtmNumber');
+    const modalSalary = document.getElementById('modalSalary');
+    const modalTotalEarnings = document.getElementById('modalTotalEarnings');
+    const modalBenefits = document.getElementById('modalBenefits');
     
-    // Format benefits as badges
-    const benefitsArray = employee.benefits.split(',').map(benefit => benefit.trim());
+    if (!modalEmployeeId || !modalEmployeeName || !modalDepartment || !modalPosition || 
+        !modalAtmNumber || !modalSalary || !modalTotalEarnings || !modalBenefits) {
+        console.error('Modal elements not found');
+        showNotification('Modal elements not found', 'error');
+        return;
+    }
+    
+    modalEmployeeId.textContent = employee.employee_id;
+    modalEmployeeName.textContent = employee.name;
+    modalDepartment.textContent = employee.department;
+    modalPosition.textContent = employee.position;
+    modalAtmNumber.textContent = employee.atm_number;
+    modalSalary.textContent = employee.salary;
+    modalTotalEarnings.textContent = employee.salary; // Total earnings is just salary now
+    
+    // Format benefits as badges - handle both array and string
+    let benefitsArray = [];
+    if (Array.isArray(employee.benefits)) {
+        benefitsArray = employee.benefits;
+    } else if (typeof employee.benefits === 'string') {
+        benefitsArray = employee.benefits.split(',').map(benefit => benefit.trim());
+    }
+    
+    console.log('Benefits array:', benefitsArray);
+    
     const benefitsHtml = benefitsArray.map(benefit => `<span class="badge bg-info me-1">${benefit}</span>`).join('');
-    document.getElementById('modalBenefits').innerHTML = benefitsHtml;
+    modalBenefits.innerHTML = benefitsHtml || '<span class="text-muted">No benefits</span>';
     
-    // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('employeeDetailsModal'));
-    modal.show();
+    // Show modal with fallback
+    try {
+        console.log('Attempting to show modal...');
+        console.log('Bootstrap available:', typeof bootstrap !== 'undefined');
+        
+        if (typeof bootstrap !== 'undefined') {
+            console.log('Using Bootstrap 5 modal');
+            const modalElement = document.getElementById('employeeDetailsModal');
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        } else if (typeof $ !== 'undefined' && $.fn.modal) {
+            console.log('Using jQuery modal');
+            $('#employeeDetailsModal').modal('show');
+        } else {
+            console.error('Bootstrap not loaded, trying direct DOM manipulation');
+            // Fallback: show modal manually
+            const modalElement = document.getElementById('employeeDetailsModal');
+            if (modalElement) {
+                modalElement.style.display = 'block';
+                modalElement.classList.add('show');
+                modalElement.setAttribute('aria-modal', 'true');
+                modalElement.setAttribute('role', 'dialog');
+                
+                // Add backdrop
+                const backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop fade show';
+                backdrop.id = 'modal-backdrop';
+                document.body.appendChild(backdrop);
+                document.body.classList.add('modal-open');
+                
+                console.log('Modal shown manually');
+            } else {
+                console.error('Modal element not found');
+                showNotification('Modal element not found', 'error');
+            }
+        }
+    } catch (error) {
+        console.error('Error showing modal:', error);
+        showNotification('Error showing modal: ' + error.message, 'error');
+    }
 }
 
 // Print employee details
@@ -365,7 +365,6 @@ document.getElementById('printEmployee').addEventListener('click', function() {
                 <h4 style="margin: 0 0 10px 0; color: #333;">Financial Information</h4>
                 <table style="width: 100%; border-collapse: collapse;">
                     <tr><td style="padding: 5px; border-bottom: 1px solid #ddd;">Salary:</td><td style="padding: 5px; text-align: right; border-bottom: 1px solid #ddd;">${document.getElementById('modalSalary').textContent}</td></tr>
-                    <tr><td style="padding: 5px; border-bottom: 1px solid #ddd;">Incentives:</td><td style="padding: 5px; text-align: right; border-bottom: 1px solid #ddd;">${document.getElementById('modalIncentives').textContent}</td></tr>
                     <tr style="font-weight: bold;"><td style="padding: 5px; border-bottom: 2px solid #007bff;">Total Earnings:</td><td style="padding: 5px; text-align: right; border-bottom: 2px solid #007bff;">${document.getElementById('modalTotalEarnings').textContent}</td></tr>
                 </table>
             </div>
@@ -433,30 +432,15 @@ document.getElementById('clearSearch').addEventListener('click', function() {
 
 // Export to Excel functionality
 document.getElementById('exportExcel').addEventListener('click', function() {
-    let csvContent = 'Employee ID,Employee Name,Department,Position,Salary,Benefits,Incentives,ATM Number\n';
+    const searchTerm = document.getElementById('searchInput').value;
     
-    const rows = document.querySelectorAll('#employeeTableBody tr');
-    rows.forEach(row => {
-        const cells = row.cells;
-        const rowData = [
-            cells[0].textContent.trim(),
-            cells[1].textContent.trim(),
-            cells[2].textContent.trim(),
-            cells[3].textContent.trim(),
-            cells[4].textContent.trim(),
-            cells[5].textContent.trim(),
-            cells[6].textContent.trim(),
-            cells[7].textContent.trim()
-        ];
-        csvContent += rowData.join(',') + '\n';
-    });
+    // Redirect to export endpoint with search parameter
+    const url = `/payroll/employee-details/export${searchTerm ? '?search=' + encodeURIComponent(searchTerm) : ''}`;
     
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Create a hidden link and trigger download
     const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `employee_details_${new Date().toISOString().slice(0, 10)}.csv`);
-    link.style.visibility = 'hidden';
+    link.href = url;
+    link.style.display = 'none';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -482,6 +466,25 @@ function showNotification(message, type = 'info') {
             alert.remove();
         }
     }, 3000);
+}
+
+// Close manual modal function
+function closeManualModal() {
+    const modalElement = document.getElementById('employeeDetailsModal');
+    const backdrop = document.getElementById('modal-backdrop');
+    
+    if (modalElement) {
+        modalElement.style.display = 'none';
+        modalElement.classList.remove('show');
+        modalElement.removeAttribute('aria-modal');
+        modalElement.removeAttribute('role');
+    }
+    
+    if (backdrop) {
+        backdrop.remove();
+    }
+    
+    document.body.classList.remove('modal-open');
 }
 </script>
 @endsection

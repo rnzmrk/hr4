@@ -32,6 +32,7 @@ class Employee extends Model
         'email',
         'department_id',
         'salary',
+        'atm_number',
         'role',
         'profile',
     ];
@@ -58,5 +59,10 @@ class Employee extends Model
     public function accounts(): HasMany
     {
         return $this->hasMany(Account::class);
+    }
+
+    public function benefitPlans()
+    {
+        return $this->hasMany(BenefitPlan::class);
     }
 }

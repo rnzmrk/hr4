@@ -36,3 +36,23 @@ Route::prefix('budget-request')->group(function () {
     Route::post('/token/validate', [App\Http\Controllers\Api\BudgetRequestController::class, 'validateToken']);
     Route::get('/token/info', [App\Http\Controllers\Api\BudgetRequestController::class, 'getTokenInfo']);
 });
+
+// Net Payout API routes
+Route::prefix('net-payout')->group(function () {
+    Route::get('/', [App\Http\Controllers\Api\NetController::class, 'index']);
+});
+
+// Payment Request API routes
+Route::prefix('payment-request')->group(function () {
+    Route::get('/', [App\Http\Controllers\Api\PaymentReqController::class, 'index']);
+    Route::post('/', [App\Http\Controllers\Api\PaymentReqController::class, 'store']);
+    Route::patch('/{id}', [App\Http\Controllers\Api\PaymentReqController::class, 'update']);
+    Route::match(['get', 'post'], 'approve', [App\Http\Controllers\Api\PaymentReqController::class, 'approve']);
+    Route::match(['get', 'post'], 'reject', [App\Http\Controllers\Api\PaymentReqController::class, 'reject']);
+    
+    // Token management routes
+    Route::post('/token/generate', [App\Http\Controllers\Api\PaymentReqController::class, 'generateToken']);
+    Route::post('/token/validate', [App\Http\Controllers\Api\PaymentReqController::class, 'validateToken']);
+    Route::get('/token/info', [App\Http\Controllers\Api\PaymentReqController::class, 'getTokenInfo']);
+});
+

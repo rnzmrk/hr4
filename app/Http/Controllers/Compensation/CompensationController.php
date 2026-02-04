@@ -108,4 +108,46 @@ class CompensationController extends Controller
             return redirect()->route('compensation.index')->with('error', 'Error updating reward: ' . $e->getMessage());
         }
     }
+
+    public function potential()
+    {
+        // Sample data for potential employees
+        $potentials = [
+            [
+                'id' => 1,
+                'name' => 'John Doe',
+                'position' => 'Senior Developer',
+                'department' => 'IT',
+                'current_performance' => 4.5,
+                'potential_score' => 4.8,
+                'readiness_level' => 'Ready for promotion',
+                'development_needs' => 'Leadership training',
+                'recommended_action' => 'Promote to Team Lead'
+            ],
+            [
+                'id' => 2,
+                'name' => 'Jane Smith',
+                'position' => 'Marketing Specialist',
+                'department' => 'Marketing',
+                'current_performance' => 4.2,
+                'potential_score' => 4.6,
+                'readiness_level' => 'Ready in 6 months',
+                'development_needs' => 'Project management',
+                'recommended_action' => 'Assign to lead project'
+            ],
+            [
+                'id' => 3,
+                'name' => 'Mike Johnson',
+                'position' => 'Sales Executive',
+                'department' => 'Sales',
+                'current_performance' => 4.7,
+                'potential_score' => 4.9,
+                'readiness_level' => 'High potential',
+                'development_needs' => 'Strategic planning',
+                'recommended_action' => 'Fast-track to management'
+            ]
+        ];
+
+        return view('hr4.compensation.potential', compact('potentials'));
+    }
 }

@@ -102,11 +102,23 @@
             </a>
 
             <div id="compMenuTop" @class('collapse ps-4 ' . (request()->is('compensation*') ? 'show' : ''))">
-                <ul @class('nav flex-column')>
+                <ul @class('nav flex-column')">
                     <li @class('nav-item')>
                         <a href="{{ route('compensation.index') }}"
                            @class('nav-link text-dark ' . (request()->is('compensation') ? 'active' : ''))">
-                           <i @class('bi bi-sliders me-2')></i> Adjustments
+                           <i @class('bi bi-sliders me-2')"></i> Adjustments
+                        </a>
+                    </li>
+                    <li @class('nav-item')>
+                        <a href="{{ route('compensation.leaves') }}"
+                           @class('nav-link text-dark ' . (request()->is('compensation/leaves') ? 'active' : ''))">
+                           <i @class('bi bi-calendar-x me-2')"></i> Leaves
+                        </a>
+                    </li>
+                    <li @class('nav-item')>
+                        <a href="{{ route('compensation.potential') }}"
+                           @class('nav-link text-dark ' . (request()->is('compensation/potential') ? 'active' : ''))">
+                           <i @class('bi bi-graph-up-arrow me-2')"></i> Potential
                         </a>
                     </li>
                     <li @class('nav-item')>
@@ -153,7 +165,19 @@
                     <li @class('nav-item')>
                         <a href="{{ route('payroll.approval') }}"
                            @class('nav-link text-dark ' . (request()->is('payroll/approval') ? 'active' : ''))>
-                           <i @class('bi bi-check-circle me-2')"></i> Payroll Approval
+                           <i @class('bi bi-check-circle me-2')"></i> Budget Request
+                        </a>
+                    </li>
+                    <li @class('nav-item')>
+                        <a href="{{ route('payroll.payment-requests.index') }}"
+                           @class('nav-link text-dark ' . (request()->is('payroll/payment-requests*') ? 'active' : ''))">
+                           <i @class('bi bi-cash-stack me-2')"></i> Payment Request
+                        </a>
+                    </li>
+                    <li @class('nav-item')>
+                        <a href="{{ route('net-payout.index') }}"
+                           @class('nav-link text-dark ' . (request()->is('net-payout*') ? 'active' : ''))">
+                           <i @class('bi bi-wallet2 me-2')"></i> Net Payout
                         </a>
                     </li>
                 </ul>
@@ -162,7 +186,7 @@
 
         <li @class('nav-item mt-2')>
             <a href="{{ route('request.index') }}"
-                @class('nav-link text-dark ' . (request()->is('request*') ? 'active' : ''))>
+                @class('nav-link text-dark ' . (request()->is('request*') ? 'active' : ''))">
                 <i @class('bi bi-box-seam me-2')></i> Item Request
             </a>
         </li>

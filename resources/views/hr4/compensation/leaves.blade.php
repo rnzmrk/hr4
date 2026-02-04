@@ -28,9 +28,14 @@
               <div class="col-md-6">
                 <label class="form-label small text-muted">Employee</label>
                 <select name="employee_id" id="edit_employee_id" class="form-select" required>
-                  @foreach(($employees ?? []) as $e)
-                    <option value="{{ $e->id }}">{{ $e->name }}</option>
-                  @endforeach
+                  <option value="1">John Doe</option>
+                  <option value="2">Jane Smith</option>
+                  <option value="3">Mike Johnson</option>
+                  <option value="4">Sarah Williams</option>
+                  <option value="5">Robert Brown</option>
+                  <option value="6">Emily Davis</option>
+                  <option value="7">David Wilson</option>
+                  <option value="8">Lisa Anderson</option>
                 </select>
               </div>
               <div class="col-md-3">
@@ -199,9 +204,14 @@
               <div class="col-md-6">
                 <label class="form-label small text-muted">Employee</label>
                 <select name="employee_id" class="form-select" required>
-                  @foreach(($employees ?? []) as $e)
-                    <option value="{{ $e->id }}">{{ $e->name }}</option>
-                  @endforeach
+                  <option value="1">John Doe</option>
+                  <option value="2">Jane Smith</option>
+                  <option value="3">Mike Johnson</option>
+                  <option value="4">Sarah Williams</option>
+                  <option value="5">Robert Brown</option>
+                  <option value="6">Emily Davis</option>
+                  <option value="7">David Wilson</option>
+                  <option value="8">Lisa Anderson</option>
                 </select>
               </div>
               <div class="col-md-3">

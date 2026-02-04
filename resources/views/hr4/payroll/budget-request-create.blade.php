@@ -67,7 +67,7 @@
                                                placeholder="0">
                                     </div>
                                     <div class="form-text">
-                                        Enter the amount requested (whole numbers only, minimum ₱1)
+                                        Enter the amount requested
                                     </div>
                                 </div>
                             </div>
@@ -81,21 +81,12 @@
                                            value="{{ old('date') ?? date('Y-m-d') }}"
                                            max="{{ date('Y-m-d') }}">
                                     <div class="form-text">
-                                        Select the date of this budget request (cannot be in the future)
+                                        Select the date of this budget request
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="alert alert-info">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    <strong>Note:</strong> All budget requests will be submitted with "Pending" status and will require approval from authorized personnel.
-                                </div>
-                            </div>
-                        </div>
-                        
+                    
                         <div class="row">
                             <div class="col-12">
                                 <div class="d-flex justify-content-between">

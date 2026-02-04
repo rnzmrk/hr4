@@ -16,7 +16,10 @@ use App\Http\Controllers\Compensation\CompensationController;
 use App\Http\Controllers\Compensation\LeaveController;
 use App\Http\Controllers\Compensation\SalaryAdjustmentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Payroll\PaymentRequestController;
+use App\Http\Controllers\Payroll\EmployeeDetailsController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\NetPayoutController;
 
 Route::get('/', function () {
     return view('hr4.dashboard');
@@ -51,6 +54,7 @@ Route::get('/compensation/leaves', [LeaveController::class, 'index'])->name('com
 Route::post('/compensation/leaves', [LeaveController::class, 'store'])->name('compensation.leaves.store');
 Route::post('/compensation/leaves/update', [LeaveController::class, 'update'])->name('compensation.leaves.update');
 Route::post('/compensation/leaves/delete', [LeaveController::class, 'delete'])->name('compensation.leaves.delete');
+Route::get('/compensation/potential', [CompensationController::class, 'potential'])->name('compensation.potential');
 
 // Salary Adjustment
 Route::get('/salary-adjustment', [SalaryAdjustmentController::class, 'index'])->name('salary.adjustment.index');
@@ -84,12 +88,32 @@ Route::get('/api/items', [\App\Http\Controllers\RequestController::class, 'getIt
 Route::post('/api/item-request', [\App\Http\Controllers\RequestController::class, 'store'])->name('request.store');
 
 // Payroll
-Route::get('/payroll/employee-details', [\App\Http\Controllers\Payroll\PayrollController::class, 'employeeDetails'])->name('payroll.employee-details');
+Route::get('/payroll/employee-details', [EmployeeDetailsController::class, 'index'])->name('payroll.employee-details');
+Route::get('/payroll/employee-details/{id}', [EmployeeDetailsController::class, 'show'])->name('payroll.employee-details.show');
+Route::get('/payroll/employee-details/export', [EmployeeDetailsController::class, 'exportExcel'])->name('payroll.employee-details.export');
+
+// Payment Requests
+Route::get('/payroll/payment-requests', [PaymentRequestController::class, 'index'])->name('payroll.payment-requests.index');Route::get('/payroll/payment-requests/create', [PaymentRequestController::class, 'create'])->name('payroll.payment-requests.create');
+Route::post('/payroll/payment-requests', [PaymentRequestController::class, 'store'])->name('payroll.payment-requests.store');
+Route::get('/payroll/payment-requests/{paymentRequest}', [PaymentRequestController::class, 'show'])->name('payroll.payment-requests.show');
+
 Route::get('/payroll/salary-computation', [\App\Http\Controllers\Payroll\PayrollController::class, 'salaryComputation'])->name('payroll.salary-computation');
-Route::get('/payroll/attendance-record', [\App\Http\Controllers\Payroll\AttendanceRecordController::class, 'index'])->name('payroll.attendance-record');
+Route::post('/payroll/search-employees', [\App\Http\Controllers\Payroll\PayrollController::class, 'searchEmployees'])->name('payroll.search-employees');
+Route::post('/payroll/calculate-payroll', [\App\Http\Controllers\Payroll\PayrollController::class, 'calculatePayroll'])->name('payroll.calculate-payroll');
+Route::post('/payroll/save-payroll', [\App\Http\Controllers\Payroll\PayrollController::class, 'savePayroll'])->name('payroll.save-payroll');
+Route::get('/payroll/get-payroll-records', [\App\Http\Controllers\Payroll\PayrollController::class, 'getPayrollRecords'])->name('payroll.get-payroll-records');
+Route::get('/payroll/get-payroll-details/{id}', [\App\Http\Controllers\Payroll\PayrollController::class, 'getPayrollDetails'])->name('payroll.get-payroll-details');
+Route::get('/payroll/attendance-record', [\App\Http\Controllers\Payroll\PayrollController::class, 'attendanceRecord'])->name('payroll.attendance-record');
 Route::get('/payroll/payslips', [\App\Http\Controllers\Payroll\PayrollController::class, 'payslips'])->name('payroll.payslips');
 Route::get('/payroll/disbursements', [\App\Http\Controllers\Payroll\PayrollController::class, 'disbursements'])->name('payroll.disbursements');
 Route::get('/payroll/approval', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'index'])->name('payroll.approval');
+
+// Net Payout
+Route::get('/net-payout', [NetPayoutController::class, 'index'])->name('net-payout.index');
+Route::get('/net-payout/{netPayout}', [NetPayoutController::class, 'show'])->name('net-payout.show');
+Route::post('/net-payout/store', [NetPayoutController::class, 'store'])->name('net-payout.store');
+Route::get('/net-payout/stats', [NetPayoutController::class, 'getSidebarStats'])->name('net-payout.stats');
+Route::get('/net-payout/data', [NetPayoutController::class, 'getPayouts'])->name('net-payout.data');
 
 // Budget Requests
 Route::prefix('payroll/budget-requests')->name('payroll.budget-requests.')->group(function () {
