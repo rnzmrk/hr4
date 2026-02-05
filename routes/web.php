@@ -84,8 +84,6 @@ Route::post('/profile/change-password', [ProfileController::class, 'changePasswo
 
 // Item Requests
 Route::get('/request', [\App\Http\Controllers\RequestController::class, 'index'])->name('request.index');
-Route::get('/api/items', [\App\Http\Controllers\RequestController::class, 'getItems'])->name('request.items');
-Route::post('/api/item-request', [\App\Http\Controllers\RequestController::class, 'store'])->name('request.store');
 
 // Payroll
 Route::get('/payroll/employee-details', [EmployeeDetailsController::class, 'index'])->name('payroll.employee-details');

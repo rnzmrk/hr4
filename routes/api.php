@@ -56,3 +56,12 @@ Route::prefix('payment-request')->group(function () {
     Route::get('/token/info', [App\Http\Controllers\Api\PaymentReqController::class, 'getTokenInfo']);
 });
 
+// Item Request API routes
+Route::prefix('item-request')->name('api.item-request.')->group(function () {
+    Route::get('/', [App\Http\Controllers\Api\ItemRequestController::class, 'index'])->name('index');
+    Route::post('/', [App\Http\Controllers\Api\ItemRequestController::class, 'store'])->name('store');
+    Route::patch('/{id}', [App\Http\Controllers\Api\ItemRequestController::class, 'update'])->name('update');
+    Route::match(['get', 'post'], 'approve', [App\Http\Controllers\Api\ItemRequestController::class, 'approve'])->name('approve');
+    Route::match(['get', 'post'], 'reject', [App\Http\Controllers\Api\ItemRequestController::class, 'reject'])->name('reject');
+});
+
