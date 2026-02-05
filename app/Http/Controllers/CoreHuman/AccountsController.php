@@ -3,8 +3,13 @@
 namespace App\Http\Controllers\CoreHuman;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AccountCredentialsMail;
 use App\Models\Account;
+use App\Models\Employee;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class AccountsController extends Controller
 {
@@ -64,19 +69,30 @@ class AccountsController extends Controller
         
         // Find employee by name to get the employee_id
         $employeeName = $data['name'];
-        $employee = \App\Models\Employee::whereRaw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(middle_name, ''), ' ', COALESCE(last_name, ''), ' ', COALESCE(suffix_name, '')) = ?", [$employeeName])->first();
-        
+        $employee = Employee::whereRaw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(middle_name, ''), ' ', COALESCE(last_name, ''), ' ', COALESCE(suffix_name, '')) = ?", [$employeeName])
+            ->with('department')
+            ->first();
+
         if (!$employee) {
             return back()->withErrors(['name' => 'Employee not found.']);
         }
-        
-        Account::create([
+
+        $password = $data['password'] ?? Str::random(10);
+
+        $account = Account::create([
             'employee_id' => $employee->id,
             'account_type' => $data['account_type'],
-            'password' => $data['password'] ?? null, // Store plain text password
+            'password' => $password,
             'blocked' => false,
         ]);
-        return redirect()->route('employees.index')->with('status', 'Account created.');
+
+        $recipient = $employee->email ?? $data['email'];
+        $sent = $this->notifyEmployee($employee, $account->account_type, $password, $recipient);
+
+        return redirect()->route('employees.index')->with([
+            'status' => 'Account created.',
+            'account_notification' => $this->buildNotificationPayload($employee, $account->account_type, $recipient, $password, $sent),
+        ]);
     }
 
     public function update(Request $request)
@@ -126,18 +142,81 @@ class AccountsController extends Controller
         
         // Find employee by name to get the employee_id
         $employeeName = $data['name'];
-        $employee = \App\Models\Employee::whereRaw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(middle_name, ''), ' ', COALESCE(last_name, ''), ' ', COALESCE(suffix_name, '')) = ?", [$employeeName])->first();
-        
+        $employee = Employee::whereRaw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(middle_name, ''), ' ', COALESCE(last_name, ''), ' ', COALESCE(suffix_name, '')) = ?", [$employeeName])
+            ->with('department')
+            ->first();
+
         if (!$employee) {
             return back()->withErrors(['name' => 'Employee not found.']);
         }
-        
-        Account::create([
+
+        $password = Str::random(10);
+
+        $account = Account::create([
             'employee_id' => $employee->id,
             'account_type' => 'ess',
-            'password_hashed' => null,
+            'password' => $password,
             'blocked' => false,
         ]);
-        return back()->with('status', 'ESS account created.');
+
+        $recipient = $employee->email ?? $data['email'];
+        $sent = $this->notifyEmployee($employee, $account->account_type, $password, $recipient);
+
+        return back()->with([
+            'status' => 'ESS account created.',
+            'account_notification' => $this->buildNotificationPayload($employee, $account->account_type, $recipient, $password, $sent),
+        ]);
+    }
+
+    protected function notifyEmployee(Employee $employee, string $accountType, string $password, ?string $email = null): bool
+    {
+        $recipient = $email ?: $employee->email;
+
+        if (!$recipient) {
+            return false;
+        }
+
+        $fullName = $this->formatEmployeeName($employee);
+
+        try {
+            Mail::to($recipient)->send(new AccountCredentialsMail(
+                $fullName,
+                $recipient,
+                optional($employee->department)->name,
+                $employee->position,
+                $accountType,
+                $password
+            ));
+            return true;
+        } catch (\Throwable $th) {
+            Log::error('Failed to send account credentials email', [
+                'employee_id' => $employee->id,
+                'account_type' => $accountType,
+                'email' => $recipient,
+                'error' => $th->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    protected function formatEmployeeName(Employee $employee): string
+    {
+        return trim(implode(' ', array_filter([
+            $employee->first_name,
+            $employee->middle_name,
+            $employee->last_name,
+            $employee->suffix_name,
+        ])));
+    }
+
+    protected function buildNotificationPayload(Employee $employee, string $accountType, ?string $email, string $password, bool $sent): array
+    {
+        return [
+            'name' => $this->formatEmployeeName($employee),
+            'email' => $email,
+            'account_type' => strtoupper($accountType),
+            'password' => $password,
+            'sent' => $sent,
+        ];
     }
 }

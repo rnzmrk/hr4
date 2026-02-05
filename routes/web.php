@@ -19,11 +19,11 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Payroll\PaymentRequestController;
 use App\Http\Controllers\Payroll\EmployeeDetailsController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\NetPayoutController;
+use App\Http\Controllers\VehicleReservationController;
 
-Route::get('/', function () {
-    return view('hr4.dashboard');
-})->name('dashboard')->middleware('auth');
+Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
 // Authentication routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -84,6 +84,9 @@ Route::post('/profile/change-password', [ProfileController::class, 'changePasswo
 
 // Item Requests
 Route::get('/request', [\App\Http\Controllers\RequestController::class, 'index'])->name('request.index');
+
+// Vehicle Reservation
+Route::get('/vehicle-reservation', [VehicleReservationController::class, 'index'])->name('vehicle.reservation');
 
 // Payroll
 Route::get('/payroll/employee-details', [EmployeeDetailsController::class, 'index'])->name('payroll.employee-details');

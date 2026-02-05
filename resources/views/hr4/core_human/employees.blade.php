@@ -33,6 +33,24 @@
     </div>
   @endif
 
+  @if($notif = session('account_notification'))
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+      <div id="accountNotificationToast" class="toast align-items-center {{ $notif['sent'] ? 'text-bg-success' : 'text-bg-warning text-dark' }} border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="7000">
+        <div class="d-flex">
+          <div class="toast-body">
+            <div class="fw-semibold mb-1">{{ $notif['account_type'] }} account for {{ $notif['name'] }}</div>
+            <div class="small">Email: <strong>{{ $notif['email'] ?? 'n/a' }}</strong></div>
+            <div class="small">Password: <code>{{ $notif['password'] }}</code></div>
+            <span class="badge {{ $notif['sent'] ? 'bg-light text-success' : 'bg-dark text-warning' }} mt-2">
+              {{ $notif['sent'] ? 'Credentials email sent' : 'Email not sent - check SMTP' }}
+            </span>
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
+  @endif
+
   {{-- Employees table --}}
   <div class="card">
     <div class="card-body">
@@ -157,7 +175,7 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label small text-muted">Position</label>
-                <input type="text" name="role" id="ess_position" class="form-control" placeholder="e.g., Staff, Employee" required>
+                <input type="text" name="position" id="ess_position" class="form-control" placeholder="e.g., Staff, Employee" required>
               </div>
               <div class="col-md-6">
                 <label class="form-label small text-muted">Status</label>
@@ -213,7 +231,7 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label small text-muted">Position</label>
-                <input type="text" name="role" id="sys_position" class="form-control" placeholder="e.g., HR, Manager, Admin" required>
+                <input type="text" name="position" id="sys_position" class="form-control" placeholder="e.g., HR, Manager, Admin" required>
               </div>
               <div class="col-md-6">
                 <label class="form-label small text-muted">Status</label>
@@ -263,6 +281,12 @@
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function(){
+  const toastEl = document.getElementById('accountNotificationToast');
+  if (toastEl && window.bootstrap?.Toast) {
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+  }
+
   const sysModal = document.getElementById('createSystemAccountModal');
   sysModal?.addEventListener('show.bs.modal', function(event){
     const btn = event.relatedTarget;

@@ -191,6 +191,13 @@
             </a>
         </li>
 
+        <li @class('nav-item mt-2')>
+            <a href="{{ route('vehicle.reservation') }}"
+                @class('nav-link text-dark ' . (request()->is('vehicle-reservation') ? 'active' : ''))">
+                <i @class('bi bi-truck me-2')></i> Vehicle Reservation
+            </a>
+        </li>
+
     </ul>
 
 </aside>

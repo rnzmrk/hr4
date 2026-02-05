@@ -15,41 +15,41 @@
                     <div class="card shadow-sm h-100">
                         <div class="card-body">
                             <div class="text-muted small">Total Employees</div>
-                            <div class="fs-4 fw-bold mt-1">247</div>
+                            <div class="fs-4 fw-bold mt-1">{{ $totalEmployees }}</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Active Employees -->
+                <!-- Regular Employees -->
                 <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
                     <div class="card shadow-sm h-100">
                         <div class="card-body">
-                            <div class="text-muted small">Active Employees</div>
-                            <div class="fs-4 fw-bold mt-1">235</div>
+                            <div class="text-muted small">Regular Employees</div>
+                            <div class="fs-4 fw-bold mt-1">{{ $regularEmployees }}</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- New Hires (This Month) -->
+                <!-- New Hires -->
                 <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
                     <div class="card shadow-sm h-100">
                         <div class="card-body">
-                            <div class="text-muted small">New Hires (This Month)</div>
-                            <div class="fs-4 fw-bold mt-1">12</div>
+                            <div class="text-muted small">New Hires</div>
+                            <div class="fs-4 fw-bold mt-1">{{ $newHireEmployees }}</div>
                         </div>
                     </div>
                 </div>
 
-
-                <!-- Open Positions -->
+                <!-- Retired Employees -->
                 <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
                     <div class="card shadow-sm h-100">
                         <div class="card-body">
-                            <div class="text-muted small">Open Positions</div>
-                            <div class="fs-4 fw-bold mt-1">18</div>
+                            <div class="text-muted small">Retired Employees</div>
+                            <div class="fs-4 fw-bold mt-1">{{ $retired }}</div>
                         </div>
                     </div>
                 </div>
+
             </div>
 
             <!-- Performance Management Graphs -->
@@ -62,26 +62,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-12 col-lg-6">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body">
-                            <h6 class="fw-bold mb-3">Attendance Trend</h6>
-                            <canvas id="attendanceTrendChart" width="400" height="200"></canvas>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- Attendance & Leave Graphs -->
             <div class="row g-3 mt-4">
-                <div class="col-12 col-lg-6">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body">
-                            <h6 class="fw-bold mb-3">Absenteeism Rate by Department</h6>
-                            <canvas id="absenteeismChart" width="400" height="200"></canvas>
-                        </div>
-                    </div>
-                </div>
                 <div class="col-12 col-lg-6">
                     <div class="card shadow-sm h-100">
                         <div class="card-body">
@@ -116,14 +100,6 @@
                 <div class="col-12 col-lg-6">
                     <div class="card shadow-sm h-100">
                         <div class="card-body">
-                            <h6 class="fw-bold mb-3">Overtime Cost Trend</h6>
-                            <canvas id="overtimeCostChart" width="400" height="200"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 col-lg-6">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body">
                             <h6 class="fw-bold mb-3">Payroll Cost per Month</h6>
                             <canvas id="payrollCostChart" width="400" height="200"></canvas>
                         </div>
@@ -154,34 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 
-    // Attendance Trend - Line Chart
-    const attendanceTrendCtx = document.getElementById('attendanceTrendChart').getContext('2d');
-    new Chart(attendanceTrendCtx, {
-        type: 'line',
-        data: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-            datasets: [{
-                label: 'Attendance Rate %',
-                data: [95, 96, 94, 97, 93],
-                borderColor: '#1cc88a',
-                tension: 0.1
-            }]
-        }
-    });
 
-    // Absenteeism Rate by Department - Bar Chart
-    const absenteeismCtx = document.getElementById('absenteeismChart').getContext('2d');
-    new Chart(absenteeismCtx, {
-        type: 'bar',
-        data: {
-            labels: ['IT', 'HR', 'Finance', 'Sales', 'Operations'],
-            datasets: [{
-                label: 'Absenteeism Rate %',
-                data: [3.2, 2.8, 2.5, 4.1, 3.5],
-                backgroundColor: '#e74a3b'
-            }]
-        }
-    });
 
     // Leave Type Distribution - Pie Chart
     const leaveTypeCtx = document.getElementById('leaveTypeChart').getContext('2d');
@@ -225,20 +174,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Overtime Cost Trend - Line Chart
-    const overtimeCostCtx = document.getElementById('overtimeCostChart').getContext('2d');
-    new Chart(overtimeCostCtx, {
-        type: 'line',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-            datasets: [{
-                label: 'Overtime Cost (₱)',
-                data: [120000, 135000, 110000, 145000, 125000, 130000],
-                borderColor: '#e74a3b',
-                tension: 0.1
-            }]
-        }
-    });
 
     // Payroll Cost per Month - Area Chart
     const payrollCostCtx = document.getElementById('payrollCostChart').getContext('2d');

@@ -11,6 +11,7 @@
     <title>Jetlouge Travels</title>
 
     {{-- styles|scripts --}}
+    @stack('styles')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
 </head>

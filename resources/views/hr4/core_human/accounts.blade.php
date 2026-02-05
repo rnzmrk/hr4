@@ -51,7 +51,6 @@
         <table class="table align-middle">
           <thead>
             <tr>
-              <th>ID</th>
               <th>Name</th>
               <th>Email</th>
               <th>Department</th>
@@ -63,7 +62,6 @@
           <tbody>
             @forelse($systemAccounts as $acc)
               <tr>
-                <td>{{ $acc->id }}</td>
                 <td>{{ $acc->employee ? trim(($acc->employee->first_name ?? '') . ' ' . ($acc->employee->middle_name ?? '') . ' ' . ($acc->employee->last_name ?? '') . ' ' . ($acc->employee->suffix_name ?? '')) : $acc->name }}</td>
                 <td>{{ $acc->employee ? $acc->employee->email : $acc->email }}</td>
                 <td>{{ $acc->employee && $acc->employee->department ? $acc->employee->department->name : ($acc->department ?? '') }}</td>
@@ -143,7 +141,6 @@
         <table class="table align-middle">
           <thead>
             <tr>
-              <th>ID</th>
               <th>Name</th>
               <th>Email</th>
               <th>Department</th>
@@ -155,7 +152,6 @@
           <tbody>
             @forelse($essAccounts as $acc)
               <tr>
-                <td>{{ $acc->id }}</td>
                 <td>{{ $acc->employee ? trim(($acc->employee->first_name ?? '') . ' ' . ($acc->employee->middle_name ?? '') . ' ' . ($acc->employee->last_name ?? '') . ' ' . ($acc->employee->suffix_name ?? '')) : $acc->name }}</td>
                 <td>{{ $acc->employee ? $acc->employee->email : $acc->email }}</td>
                 <td>{{ $acc->employee && $acc->employee->department ? $acc->employee->department->name : ($acc->department ?? '') }}</td>
