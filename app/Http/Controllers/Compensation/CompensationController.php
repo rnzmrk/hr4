@@ -111,42 +111,54 @@ class CompensationController extends Controller
 
     public function potential()
     {
-        // Sample data for potential employees
-        $potentials = [
-            [
-                'id' => 1,
-                'name' => 'John Doe',
-                'position' => 'Senior Developer',
-                'department' => 'IT',
-                'current_performance' => 4.5,
-                'potential_score' => 4.8,
-                'readiness_level' => 'Ready for promotion',
-                'development_needs' => 'Leadership training',
-                'recommended_action' => 'Promote to Team Lead'
-            ],
-            [
-                'id' => 2,
-                'name' => 'Jane Smith',
-                'position' => 'Marketing Specialist',
-                'department' => 'Marketing',
-                'current_performance' => 4.2,
-                'potential_score' => 4.6,
-                'readiness_level' => 'Ready in 6 months',
-                'development_needs' => 'Project management',
-                'recommended_action' => 'Assign to lead project'
-            ],
-            [
-                'id' => 3,
-                'name' => 'Mike Johnson',
-                'position' => 'Sales Executive',
-                'department' => 'Sales',
-                'current_performance' => 4.7,
-                'potential_score' => 4.9,
-                'readiness_level' => 'High potential',
-                'development_needs' => 'Strategic planning',
-                'recommended_action' => 'Fast-track to management'
-            ]
-        ];
+        // Fetch potential data from external API
+        $potentials = [];
+        
+        try {
+            // Get potential data
+            $potentialResponse = Http::withoutVerifying()->get('https://hr2.jetlougetravels-ph.com/api/potential');
+            
+            if ($potentialResponse->successful()) {
+                $potentialData = $potentialResponse->json();
+                
+                // Get employee data for names
+                $employeeResponse = Http::withoutVerifying()->get('https://hr4.jetlougetravels-ph.com/api/accounts');
+                
+                $employees = [];
+                if ($employeeResponse->successful()) {
+                    $employeePayload = $employeeResponse->json();
+                    $systemAccounts = \Illuminate\Support\Arr::get($employeePayload, 'system_accounts', []);
+                    
+                    foreach ($systemAccounts as $account) {
+                        if (($account['account_type'] ?? null) === 'system' && !($account['blocked'] ?? false)) {
+                            $employee = $account['employee'] ?? null;
+                            if ($employee) {
+                                $employees[$employee['id']] = trim(($employee['first_name'] ?? '') . ' ' . ($employee['last_name'] ?? ''));
+                            }
+                        }
+                    }
+                }
+                
+                // Process potential data
+                foreach ($potentialData as $potential) {
+                    $employeeId = $potential['employee_id'] ?? null;
+                    $employeeName = $employees[$employeeId] ?? 'Unknown Employee';
+                    
+                    $potentials[] = [
+                        'id' => $potential['id'],
+                        'employee_id' => $employeeId,
+                        'name' => $employeeName,
+                        'potential_role' => $potential['potential_role'],
+                        'identified_date' => $potential['identified_date'],
+                        'created_at' => $potential['created_at'],
+                        'updated_at' => $potential['updated_at']
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            // If API fails, return empty array
+            $potentials = [];
+        }
 
         return view('hr4.compensation.potential', compact('potentials'));
     }

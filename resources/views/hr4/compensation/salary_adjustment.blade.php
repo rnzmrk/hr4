@@ -83,7 +83,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="updateSalaryModalLabel{{ $employee->id }}">Update Salary</h5>
+        <h5 class="modal-title" id="updateSalaryModalLabel{{ $employee->id }}">Update Salary Adjustment</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <form method="POST" action="{{ route('salary.adjustment.update', $employee->id) }}">
@@ -109,7 +109,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Update Salary</button>
+          <button type="submit" class="btn btn-primary">Update Adjustment</button>
         </div>
       </form>
     </div>

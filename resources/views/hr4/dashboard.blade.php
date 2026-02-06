@@ -57,9 +57,9 @@
                 <div class="col-12 col-md-6">
                     <div class="card shadow-sm h-100">
                         <div class="card-body">
-                            <h6 class="fw-bold mb-3">Performance Rating Distribution</h6>
+                            <h6 class="fw-bold mb-3">Payroll Cost per Month</h6>
                             <div style="position: relative; height: 260px;">
-                                <canvas id="performanceRatingChart"></canvas>
+                                <canvas id="payrollCostChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -91,9 +91,9 @@
                 <div class="col-12 col-md-6">
                     <div class="card shadow-sm h-100">
                         <div class="card-body">
-                            <h6 class="fw-bold mb-3">Payroll Cost per Month</h6>
+                            <h6 class="fw-bold mb-3">Performance Rating Distribution</h6>
                             <div style="position: relative; height: 260px;">
-                                <canvas id="payrollCostChart"></canvas>
+                                <canvas id="rewardDistributionChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -108,19 +108,53 @@
 document.addEventListener('DOMContentLoaded', function() {
 
 
-    // Performance Rating Distribution - Bar Chart
-    const performanceRatingCtx = document.getElementById('performanceRatingChart').getContext('2d');
-    new Chart(performanceRatingCtx, {
-        type: 'bar',
-        data: {
-            labels: ['Rating 1', 'Rating 2', 'Rating 3', 'Rating 4', 'Rating 5'],
-            datasets: [{
-                label: 'Number of Employees',
-                data: [5, 15, 45, 120, 62],
-                backgroundColor: '#4e73df'
-            }]
-        }
-    });
+    // Performance Rating Distribution - Now showing Employee Rewards by Month
+    const rewardDistributionCtx = document.getElementById('rewardDistributionChart').getContext('2d');
+
+    fetch("{{ route('dashboard.reward-distribution') }}")
+        .then(response => response.json())
+        .then(payload => {
+            const labels = payload.labels || [];
+            const counts = payload.counts || [];
+
+            new Chart(rewardDistributionCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Employees with Benefits',
+                        data: counts,
+                        backgroundColor: '#4e73df'
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: true
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const count = context.parsed.y || 0;
+                                    return `Employees: ${count}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading reward distribution data:', error);
+        });
 
     // Salary Distribution - Histogram (real data)
     const salaryDistributionCtx = document.getElementById('salaryDistributionChart').getContext('2d');

@@ -37,9 +37,8 @@
                         $departmentName = $employeeData['department']['name'] ?? null;
                         $position = $employeeData['position'] ?? null;
                         $rawProfilePic = $account['profile_picture'] ?? null;
-                        $profilePic = $rawProfilePic
-                            ? 'https://hr4.jetlougetravels-ph.com/storage/profile_pictures/' . $rawProfilePic
-                            : asset('images/default-avatar.png');
+                        $hasProfilePic = !empty($rawProfilePic) && $rawProfilePic !== '';
+                        $firstLetter = strtoupper(substr(trim($employeeName), 0, 1));
                     @endphp
 
                     <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
@@ -53,11 +52,19 @@
                                     <div class="mb-3">
                                         <label for="profile_picture" class="form-label fw-bold">Profile Picture</label>
                                         <div class="position-relative d-inline-block">
-                                            <img src="{{ $profilePic }}" 
-                                                 alt="Profile Picture" 
-                                                 class="rounded-circle border border-3 border-primary" 
-                                                 style="width: 150px; height: 150px; object-fit: cover;"
-                                                 id="profilePreview">
+                                            @if($hasProfilePic)
+                                                <img src="{{ 'https://hr4.jetlougetravels-ph.com/storage/profile_pictures/' . $rawProfilePic }}" 
+                                                     alt="Profile Picture" 
+                                                     class="rounded-circle border border-3 border-primary" 
+                                                     style="width: 150px; height: 150px; object-fit: cover;"
+                                                     id="profilePreview">
+                                            @else
+                                                <div class="rounded-circle border border-3 border-primary d-flex align-items-center justify-content-center" 
+                                                     style="width: 150px; height: 150px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 60px; font-weight: bold;"
+                                                     id="profilePreview">
+                                                    {{ $firstLetter }}
+                                                </div>
+                                            @endif
                                             <label for="profile_picture" class="position-absolute bottom-0 end-0 btn btn-primary btn-sm rounded-circle">
                                                 <i class="bi bi-camera"></i>
                                             </label>
@@ -237,11 +244,22 @@ document.getElementById('profile_picture').addEventListener('change', function p
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            preview.src = e.target.result;
+            // Create an img element to replace the div if it's a default avatar
+            if (preview.tagName === 'DIV') {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = 'Profile Picture';
+                img.className = 'rounded-circle border border-3 border-primary';
+                img.style.cssText = 'width: 150px; height: 150px; object-fit: cover;';
+                img.id = 'profilePreview';
+                preview.parentNode.replaceChild(img, preview);
+            } else {
+                preview.src = e.target.result;
+            }
         };
         reader.readAsDataURL(file);
     }
-}
+});
 </script>
 
 @endsection

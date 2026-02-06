@@ -22,70 +22,7 @@
                 </div>
             </div>
 
-            <!-- Summary Cards -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="card border-primary">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="text-muted mb-2">Total High Potentials</h6>
-                                    <h3 class="mb-0">{{ count($potentials) }}</h3>
-                                </div>
-                                <div class="text-primary">
-                                    <i class="bi bi-people fs-2"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card border-success">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="text-muted mb-2">Ready for Promotion</h6>
-                                    <h3 class="mb-0">{{ collect($potentials)->where('readiness_level', 'Ready for promotion')->count() }}</h3>
-                                </div>
-                                <div class="text-success">
-                                    <i class="bi bi-arrow-up-circle fs-2"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card border-warning">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="text-muted mb-2">Avg Performance Score</h6>
-                                    <h3 class="mb-0">{{ number_format(collect($potentials)->avg('current_performance'), 1) }}</h3>
-                                </div>
-                                <div class="text-warning">
-                                    <i class="bi bi-star fs-2"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card border-info">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="text-muted mb-2">Avg Potential Score</h6>
-                                    <h3 class="mb-0">{{ number_format(collect($potentials)->avg('potential_score'), 1) }}</h3>
-                                </div>
-                                <div class="text-info">
-                                    <i class="bi bi-trophy fs-2"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            
             <!-- Potential Employees Table -->
             <div class="card">
                 <div class="card-header bg-white">
@@ -97,13 +34,8 @@
                             <thead>
                                 <tr>
                                     <th>Employee</th>
-                                    <th>Position</th>
-                                    <th>Department</th>
-                                    <th>Performance Score</th>
-                                    <th>Potential Score</th>
-                                    <th>Readiness Level</th>
-                                    <th>Development Needs</th>
-                                    <th>Recommended Action</th>
+                                    <th>Potential Role</th>
+                                    <th>Identified Date</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -117,44 +49,18 @@
                                             </div>
                                             <div>
                                                 <div class="fw-medium">{{ $potential['name'] }}</div>
-                                                <small class="text-muted">ID: {{ $potential['id'] }}</small>
+                                                <small class="text-muted">ID: {{ $potential['employee_id'] }}</small>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>{{ $potential['position'] }}</td>
                                     <td>
-                                        <span class="badge bg-light text-dark">{{ $potential['department'] }}</span>
+                                        <span class="badge bg-primary">{{ $potential['potential_role'] }}</span>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <span class="badge bg-success">{{ $potential['current_performance'] }}</span>
-                                            <div class="progress ms-2" style="width: 60px; height: 6px;">
-                                                <div class="progress-bar bg-success" style="width: {{ ($potential['current_performance'] / 5) * 100 }}%"></div>
-                                            </div>
+                                            <i class="bi bi-calendar-event me-2 text-muted"></i>
+                                            {{ \Carbon\Carbon::parse($potential['identified_date'])->format('M d, Y') }}
                                         </div>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <span class="badge bg-primary">{{ $potential['potential_score'] }}</span>
-                                            <div class="progress ms-2" style="width: 60px; height: 6px;">
-                                                <div class="progress-bar bg-primary" style="width: {{ ($potential['potential_score'] / 5) * 100 }}%"></div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        @php
-                                            $readinessClass = match($potential['readiness_level']) {
-                                                'Ready for promotion' => 'success',
-                                                'Ready in 6 months' => 'warning',
-                                                'High potential' => 'info',
-                                                default => 'secondary'
-                                            };
-                                        @endphp
-                                        <span class="badge bg-{{ $readinessClass }}">{{ $potential['readiness_level'] }}</span>
-                                    </td>
-                                    <td>{{ $potential['development_needs'] }}</td>
-                                    <td>
-                                        <span class="text-primary fw-medium">{{ $potential['recommended_action'] }}</span>
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">
@@ -172,9 +78,9 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="9" class="text-center text-muted py-4">
+                                    <td colspan="4" class="text-center text-muted py-4">
                                         <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                                        No high potential employees found
+                                        No potential employees found
                                     </td>
                                 </tr>
                                 @endforelse

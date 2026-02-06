@@ -3,11 +3,12 @@
 
     {{-- Profile Section --}}
     <div @class('profile-section text-center')>
+        <div class="text-center">
         @php
             $loggedIn = Auth::user();
             $sidebarName = $loggedIn->name ?? 'John Doe';
             $sidebarPosition = 'Administrator';
-            $sidebarAvatar = asset('images/default-avatar.png');
+            $sidebarAvatar = null;
 
             try {
                 if ($loggedIn && $loggedIn->email) {
@@ -36,7 +37,8 @@
                             $sidebarName = trim(($employee['first_name'] ?? '') . ' ' . ($employee['middle_name'] ?? '') . ' ' . ($employee['last_name'] ?? '') . ' ' . ($employee['suffix_name'] ?? '')) ?: $sidebarName;
                             $sidebarPosition = $employee['position'] ?? $sidebarPosition;
 
-                            if (!empty($matched['profile_picture'])) {
+                            // Check for profile picture - ensure it's not empty and not null
+                            if (!empty($matched['profile_picture']) && $matched['profile_picture'] !== '') {
                                 $sidebarAvatar = 'https://hr4.jetlougetravels-ph.com/storage/profile_pictures/' . $matched['profile_picture'];
                             }
                         }
@@ -45,13 +47,23 @@
             } catch (\Throwable $e) {
                 // Fallbacks already set above
             }
+
+            $firstLetter = strtoupper(substr(trim($sidebarName), 0, 1));
         @endphp
         <a href="{{ route('profile.index') }}" class="text-decoration-none">
-            <img src="{{ $sidebarAvatar }}"
-                alt="{{ $sidebarName }}" class="profile-img mb-2">
-            <h6 @class('fw-semibold mb-1 text-dark')>{{ $sidebarName }}</h6>
+            @if($sidebarAvatar)
+                <img src="{{ $sidebarAvatar }}"
+                    alt="{{ $sidebarName }}" class="profile-img mb-2 rounded-circle">
+            @else
+                <div class="profile-img mb-2 rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 24px; font-weight: bold;">
+                    {{ $firstLetter }}
+                </div>
+            @endif
+            <h6 @class('fw-semibold mb-1 text-dark')">{{ $sidebarName }}</h6>
             <small @class('text-muted')>{{ $sidebarPosition }}</small>
         </a>
+        </div>
     </div>
         
     {{-- Navigation Menu --}}
@@ -146,13 +158,7 @@
 
             <div id="compMenuTop" @class('collapse ps-4 ' . (request()->is('compensation*') ? 'show' : ''))">
                 <ul @class('nav flex-column')">
-                    <li @class('nav-item')>
-                        <a href="{{ route('compensation.index') }}"
-                           @class('nav-link text-dark ' . (request()->is('compensation') ? 'active' : ''))">
-                           <i @class('bi bi-sliders me-2')"></i> Adjustments
-                        </a>
-                    </li>
-                    <li @class('nav-item')>
+                                        <li @class('nav-item')>
                         <a href="{{ route('compensation.leaves') }}"
                            @class('nav-link text-dark ' . (request()->is('compensation/leaves') ? 'active' : ''))">
                            <i @class('bi bi-calendar-x me-2')"></i> Leaves

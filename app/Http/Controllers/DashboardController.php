@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\Payroll;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
 
 // Employee statuses
@@ -112,6 +113,66 @@ class DashboardController extends Controller
             'labels' => $labels,
             'counts' => $counts,
             'totals' => $totals,
+        ]);
+    }
+
+    /**
+     * Get reward distribution data (employees with benefits by month).
+     */
+    public function rewardDistributionData()
+    {
+        $benefitsByMonth = [];
+        
+        try {
+            // Use database model for employee benefits
+            $benefits = \App\Models\EmployeeBenefit::select('employee_id', 'created_at')
+                ->orderBy('created_at', 'asc')
+                ->get();
+            
+            // Group benefits by month
+            foreach ($benefits as $benefit) {
+                if ($benefit->created_at) {
+                    $date = \Carbon\Carbon::parse($benefit->created_at);
+                    $monthKey = $date->format('Y-m');
+                    $monthLabel = $date->format('M');
+                    
+                    if (!isset($benefitsByMonth[$monthKey])) {
+                        $benefitsByMonth[$monthKey] = [
+                            'label' => $monthLabel,
+                            'count' => 0,
+                            'employees' => []
+                        ];
+                    }
+                    
+                    // Count unique employees per month
+                    $employeeId = $benefit->employee_id;
+                    if ($employeeId && !isset($benefitsByMonth[$monthKey]['employees'][$employeeId])) {
+                        $benefitsByMonth[$monthKey]['employees'][$employeeId] = true;
+                        $benefitsByMonth[$monthKey]['count']++;
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // If database query fails, return empty data
+        }
+        
+        // Get last 6 months
+        $labels = [];
+        $counts = [];
+        $end = Carbon::now()->startOfMonth();
+        $start = $end->copy()->subMonths(5);
+        
+        for ($i = 0; $i < 6; $i++) {
+            $month = $start->copy()->addMonths($i);
+            $key = $month->format('Y-m');
+            
+            $labels[] = $month->format('M');
+            $counts[] = $benefitsByMonth[$key]['count'] ?? 0;
+        }
+        
+        return response()->json([
+            'labels' => $labels,
+            'counts' => $counts,
         ]);
     }
 

@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/payroll-cost', [DashboardController::class, 'payrollCostData'])->name('dashboard.payroll-cost');
     Route::get('/dashboard/salary-distribution', [DashboardController::class, 'salaryDistributionData'])->name('dashboard.salary-distribution');
     Route::get('/dashboard/salary-by-department', [DashboardController::class, 'salaryByDepartmentData'])->name('dashboard.salary-by-department');
+    Route::get('/dashboard/reward-distribution', [DashboardController::class, 'rewardDistributionData'])->name('dashboard.reward-distribution');
 
     // Departments page (Core Human)
     Route::get('/departments', [DepartmentsController::class, 'index'])->name('departments.index');

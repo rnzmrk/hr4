@@ -16,7 +16,7 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-4 text-center">
                             <div class="text-center mb-4">
                                 @php
                                     $employeeName = $employee
@@ -25,14 +25,20 @@
                                     $position = $employee['position'] ?? null;
                                     $departmentName = $employee['department']['name'] ?? null;
                                     $rawProfilePic = $account['profile_picture'] ?? null;
-                                    $profilePicUrl = $rawProfilePic
-                                        ? 'https://hr4.jetlougetravels-ph.com/storage/profile_pictures/' . $rawProfilePic
-                                        : asset('images/default-avatar.png');
+                                    $hasProfilePic = !empty($rawProfilePic) && $rawProfilePic !== '';
+                                    $firstLetter = strtoupper(substr(trim($employeeName), 0, 1));
                                 @endphp
-                                <img src="{{ $profilePicUrl }}" 
-                                     alt="Profile Picture" 
-                                     class="rounded-circle img-fluid" 
-                                     style="width: 150px; height: 150px; object-fit: cover; border: 4px solid var(--jetlouge-primary);">
+                                @if($hasProfilePic)
+                                    <img src="{{ 'https://hr4.jetlougetravels-ph.com/storage/profile_pictures/' . $rawProfilePic }}" 
+                                         alt="Profile Picture" 
+                                         class="rounded-circle img-fluid" 
+                                         style="width: 150px; height: 150px; object-fit: cover; border: 4px solid var(--jetlouge-primary);">
+                                @else
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center img-fluid" 
+                                         style="width: 150px; height: 150px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 60px; font-weight: bold; border: 4px solid var(--jetlouge-primary);">
+                                        {{ $firstLetter }}
+                                    </div>
+                                @endif
                                 <h4 class="mt-3 mb-1">{{ $employeeName ?: 'N/A' }}</h4>
                                 <p class="text-muted">{{ $position ?: 'N/A' }}</p>
                             </div>

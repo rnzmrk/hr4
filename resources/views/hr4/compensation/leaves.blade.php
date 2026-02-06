@@ -8,9 +8,6 @@
 <div class="container-xxl">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <div></div>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createLeaveModal">
-      <i class="bi bi-plus-circle me-1"></i> Record Leave
-    </button>
   </div>
   {{-- Edit Leave Modal --}}
   <div class="modal fade" id="editLeaveModal" tabindex="-1" aria-labelledby="editLeaveModalLabel" aria-hidden="true">
@@ -180,7 +177,7 @@
             </tr>
             @empty
             <tr>
-              <td colspan="9" class="text-center text-muted">No leave records yet.</td>
+              <td colspan="9" class="text-center text-muted">No records from leave</td>
             </tr>
             @endforelse
           </tbody>

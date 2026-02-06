@@ -6,69 +6,61 @@ use App\Http\Controllers\Controller;
 use App\Models\LeaveRecord;
 use App\Models\Employee;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class LeaveController extends Controller
 {
     public function index()
     {
-        // Hardcoded sample data for leaves
-        $leaves = [
-            [
-                'id' => 1,
-                'employee' => 'John Doe',
-                'leave_type' => 'Sick Leave',
-                'is_paid' => true,
-                'start_date' => '2024-01-15',
-                'end_date' => '2024-01-17',
-                'hours' => 24,
-                'status' => 'approved',
-                'notes' => 'Flu symptoms'
-            ],
-            [
-                'id' => 2,
-                'employee' => 'Jane Smith',
-                'leave_type' => 'Vacation Leave',
-                'is_paid' => true,
-                'start_date' => '2024-02-10',
-                'end_date' => '2024-02-14',
-                'hours' => 40,
-                'status' => 'approved',
-                'notes' => 'Family vacation'
-            ],
-            [
-                'id' => 3,
-                'employee' => 'Mike Johnson',
-                'leave_type' => 'Personal Leave',
-                'is_paid' => false,
-                'start_date' => '2024-03-05',
-                'end_date' => '2024-03-05',
-                'hours' => 8,
-                'status' => 'pending',
-                'notes' => 'Personal matter'
-            ],
-            [
-                'id' => 4,
-                'employee' => 'Sarah Williams',
-                'leave_type' => 'Maternity Leave',
-                'is_paid' => true,
-                'start_date' => '2024-04-01',
-                'end_date' => '2024-06-30',
-                'hours' => 480,
-                'status' => 'approved',
-                'notes' => 'Maternity leave period'
-            ],
-            [
-                'id' => 5,
-                'employee' => 'Robert Brown',
-                'leave_type' => 'Emergency Leave',
-                'is_paid' => true,
-                'start_date' => '2024-03-20',
-                'end_date' => '2024-03-21',
-                'hours' => 16,
-                'status' => 'approved',
-                'notes' => 'Family emergency'
-            ]
-        ];
+        // Fetch leave data from external API
+        $leaves = [];
+        
+        try {
+            $response = Http::withoutVerifying()->get('https://hr2.jetlougetravels-ph.com/api/leave-applications');
+            
+            if ($response->successful()) {
+                $leaveData = $response->json();
+                
+                // Get employee data for names
+                $employeeResponse = Http::withoutVerifying()->get('https://hr4.jetlougetravels-ph.com/api/accounts');
+                
+                $employees = [];
+                if ($employeeResponse->successful()) {
+                    $employeePayload = $employeeResponse->json();
+                    $systemAccounts = \Illuminate\Support\Arr::get($employeePayload, 'system_accounts', []);
+                    
+                    foreach ($systemAccounts as $account) {
+                        if (($account['account_type'] ?? null) === 'system' && !($account['blocked'] ?? false)) {
+                            $employee = $account['employee'] ?? null;
+                            if ($employee) {
+                                $employees[$employee['id']] = trim(($employee['first_name'] ?? '') . ' ' . ($employee['last_name'] ?? ''));
+                            }
+                        }
+                    }
+                }
+                
+                // Process leave data
+                foreach ($leaveData as $leave) {
+                    $employeeId = $leave['employee_id'] ?? null;
+                    $employeeName = $employees[$employeeId] ?? 'Unknown Employee';
+                    
+                    $leaves[] = [
+                        'id' => $leave['id'],
+                        'employee' => $employeeName,
+                        'leave_type' => $leave['leave_type'] ?? 'Leave',
+                        'is_paid' => $leave['is_paid'] ?? false,
+                        'start_date' => $leave['start_date'],
+                        'end_date' => $leave['end_date'],
+                        'hours' => $leave['hours'] ?? null,
+                        'status' => $leave['status'] ?? 'pending',
+                        'notes' => $leave['notes'] ?? null
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            // If API fails, return empty array
+            $leaves = [];
+        }
 
         return view('hr4.compensation.leaves', compact('leaves'));
     }

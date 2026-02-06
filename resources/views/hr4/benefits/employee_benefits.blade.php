@@ -29,6 +29,59 @@
     </div>
   @endif
 
+  <!-- Monthly Summary Cards -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card border-primary">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted mb-2">Total Assignments</h6>
+              <h3 class="mb-0">{{ count($assignments ?? []) }}</h3>
+            </div>
+            <div class="text-primary">
+              <i class="bi bi-people fs-2"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-success">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted mb-2">This Month</h6>
+              <h3 class="mb-0">{{ collect($assignments ?? [])->filter(function($assignment) { 
+                return \Carbon\Carbon::parse($assignment->created_at)->format('Y-m') === \Carbon\Carbon::now()->format('Y-m'); 
+              })->count() }}</h3>
+            </div>
+            <div class="text-success">
+              <i class="bi bi-calendar-check fs-2"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-info">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h6 class="text-muted mb-2">Last Month</h6>
+              <h3 class="mb-0">{{ collect($assignments ?? [])->filter(function($assignment) { 
+                return \Carbon\Carbon::parse($assignment->created_at)->format('Y-m') === \Carbon\Carbon::now()->subMonth()->format('Y-m'); 
+              })->count() }}</h3>
+            </div>
+            <div class="text-info">
+              <i class="bi bi-calendar-event fs-2"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="card">
     <div class="card-body">
       <div class="table-responsive">

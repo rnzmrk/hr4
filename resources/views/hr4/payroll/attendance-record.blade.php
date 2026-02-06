@@ -43,6 +43,7 @@
                                 <tr>
                                     <th>Employee Name</th>
                                     <th>Month Start</th>
+                                    <th>Total Hours</th>
                                     <th>Overtime Hours</th>
                                     <th>Present Days</th>
                                     <th>Absent Days</th>
@@ -55,6 +56,7 @@
                                         <tr class="attendance-row">
                                             <td>{{ $attendance['employee_name'] }}</td>
                                             <td>{{ $attendance['month_start_date'] }}</td>
+                                            <td>{{ number_format($attendance['total_hours'], 2) }}</td>
                                             <td>{{ number_format($attendance['overtime_hours'], 2) }}</td>
                                             <td>{{ $attendance['present_days'] }}</td>
                                             <td>{{ $attendance['absent_days'] }}</td>

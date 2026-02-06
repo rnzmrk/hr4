@@ -136,7 +136,7 @@
             @empty
             <tr>
               <td colspan="6" class="text-center text-muted">No employees found.</td>
-            </tr>
+            </tr> 
             @endforelse
           </tbody>
         </table>
