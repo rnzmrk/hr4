@@ -78,7 +78,7 @@ class EmployeeController extends Controller
             'salary'          => 'nullable|integer|min:0',
             'atm_number'      => 'nullable|string|max:20',
             'email'           => 'nullable|email|max:255',
-            'department_id'   => 'nullable|integer|exists:departments,id',
+            'department'   => 'nullable|integer|exists:department',
             'role'            => 'nullable|in:ess,user,admin,superadmin',
             'profile'         => 'nullable|string|max:255',
         ]);
