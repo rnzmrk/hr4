@@ -35,10 +35,14 @@ class SalaryAdjustmentController extends Controller
     {
         $request->validate([
             'salary' => 'required|integer|min:0',
+            'position' => 'nullable|string|max:255',
         ]);
 
         $employee = Employee::findOrFail($id);
         $employee->salary = $request->input('salary');
+        if ($request->filled('position')) {
+            $employee->position = $request->input('position');
+        }
         $employee->save();
 
         return back()->with('status', 'Salary updated successfully.');

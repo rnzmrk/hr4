@@ -20,6 +20,14 @@
                 <li><a class="dropdown-item" href="#">No Openings</a></li>
             </ul>
         </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addDepartmentModal">
+          <i class="bi bi-building-add me-1"></i> Add Department
+        </button>
+      </div>
+    </div>
+
 {{-- Add Opening Modal --}}
 <div class="modal fade" id="addOpeningModal" tabindex="-1" aria-labelledby="addOpeningModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-md modal-dialog-centered">
@@ -93,24 +101,10 @@ document.addEventListener('DOMContentLoaded', function(){
             </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Add</button>
-        </div>
       </form>
     </div>
   </div>
   </div>
-      </div>
-      <div class="d-flex gap-2">
-        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addDepartmentModal">
-          <i class="bi bi-building-add me-1"></i> Add Department
-        </button>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#requisitionModal">
-          <i class="bi bi-file-earmark-plus me-1"></i> Request Requisition
-        </button>
-      </div>
-    </div>
 
     <div class="card">
       <div class="card-body">
@@ -182,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function(){
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label small text-muted">Requested By</label>
-              <input type="text" name="requested_by" class="form-control" placeholder="Alice Smith" required>
+              <input type="text" name="requested_by" class="form-control" value="{{ auth()->user()->name ?? '' }}" readonly required>
             </div>
             <div class="col-md-6">
               <label class="form-label small text-muted">Department</label>
@@ -194,8 +188,10 @@ document.addEventListener('DOMContentLoaded', function(){
             </div>
 
             <div class="col-md-6">
-              <label class="form-label small text-muted">Role</label>
-              <input type="text" name="requisition_title" class="form-control" placeholder="HR Specialist" required>
+              <label class="form-label small text-muted">Position</label>
+              <select name="position" id="req_position" class="form-select" required>
+                <option value="" disabled selected>Select position</option>
+              </select>
             </div>
             <div class="col-md-3">
               <label class="form-label small text-muted">Openings</label>
@@ -219,27 +215,6 @@ document.addEventListener('DOMContentLoaded', function(){
                 <option>Internship</option>
               </select>
             </div>
-            <div class="col-md-6">
-              <label class="form-label small text-muted">Arrangement</label>
-              <select name="requisition_arrangement" class="form-select">
-                <option>On-Site</option>
-                <option>Hybrid</option>
-                <option>Remote</option>
-              </select>
-            </div>
-
-            <div class="col-12">
-              <label class="form-label small text-muted">Description</label>
-              <textarea name="requisition_description" class="form-control" rows="2" placeholder="Role overview..."></textarea>
-            </div>
-            <div class="col-12">
-              <label class="form-label small text-muted">Responsibilities</label>
-              <textarea name="requisition_responsibilities" class="form-control" rows="2" placeholder="Key responsibilities..."></textarea>
-            </div>
-            <div class="col-12">
-              <label class="form-label small text-muted">Qualifications</label>
-              <textarea name="requisition_qualifications" class="form-control" rows="2" placeholder="Required qualifications..."></textarea>
-            </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -254,19 +229,67 @@ document.addEventListener('DOMContentLoaded', function(){
 document.addEventListener('DOMContentLoaded', function () {
   const modalEl = document.getElementById('requisitionModal');
   if (!modalEl) return;
+
+  // Department -> positions mapping (same as DepartmentsController)
+  const positionMappings = {
+    'Financial': ['Financial Staff'],
+    'Core': ['Travel Agent', 'Travel Staff'],
+    'Logistic': ['Driver', 'Fleet Manager', 'Procurement Officer', 'Logistics Staff'],
+    'Human Resource': ['Hr Manager', 'Hr Staff'],
+    'Administrative': ['Administrative Staff']
+  };
+
+  function populateReqPositions(deptName, preselect) {
+    const posSelect = modalEl.querySelector('#req_position');
+    if (!posSelect) return;
+
+    const positions = positionMappings[deptName] || [];
+    posSelect.innerHTML = '<option value="" disabled>Select position</option>';
+
+    positions.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = p;
+      posSelect.appendChild(opt);
+    });
+
+    if (preselect) {
+      posSelect.value = preselect;
+      if (!posSelect.value && positions.length === 1) {
+        posSelect.value = positions[0];
+      }
+    } else if (positions.length === 1) {
+      posSelect.value = positions[0];
+    } else {
+      posSelect.selectedIndex = 0;
+    }
+  }
+
   modalEl.addEventListener('show.bs.modal', function (event) {
     const button = event.relatedTarget;
     const dept = button ? button.getAttribute('data-dept') : null;
     const role = button ? button.getAttribute('data-role') : null;
-    if (dept) {
-      const select = modalEl.querySelector('select[name="department"]');
-      if (select) select.value = dept;
-    }
-    if (role) {
-      const titleInput = modalEl.querySelector('input[name="requisition_title"]');
-      if (titleInput) titleInput.value = role;
+    const deptSelect = modalEl.querySelector('select[name="department"]');
+
+    if (dept && deptSelect) {
+      deptSelect.value = dept;
+      populateReqPositions(dept, role || null);
+    } else if (deptSelect) {
+      populateReqPositions(deptSelect.value || '', role || null);
     }
   });
+
+  const deptSelect = modalEl.querySelector('select[name="department"]');
+  if (deptSelect) {
+    deptSelect.addEventListener('change', function(){
+      populateReqPositions(this.value || '', null);
+    });
+
+    // Initial population on page load
+    if (deptSelect.value) {
+      populateReqPositions(deptSelect.value, null);
+    }
+  }
 });
 </script>
 
@@ -373,6 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Clear position limits
         const positionLimitsList = document.getElementById('positionLimitsList');
+        if (!positionLimitsList) return;
         positionLimitsList.innerHTML = '';
         
         // Add position limit inputs

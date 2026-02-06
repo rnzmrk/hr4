@@ -120,13 +120,7 @@
             </div>
             <div class="alert alert-info">
                 <i class="bi bi-info-circle me-2"></i>
-                This department has {{ $details['openings'] }} opening(s) available. You can create requisitions to fill these positions.
-            </div>
-            <div class="d-flex gap-2">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#requisitionModal" 
-                        data-dept="{{ $department->name }}" data-role="{{ $department->position ?? '' }}">
-                    <i class="bi bi-file-earmark-plus me-1"></i> Create Requisition
-                </button>
+                This department has {{ $details['openings'] }} opening(s) available.
             </div>
         </div>
     </div>

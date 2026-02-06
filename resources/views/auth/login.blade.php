@@ -61,68 +61,108 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('login') }}" id="loginForm">
-                @csrf
-                
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email Address</label>
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="bi bi-envelope"></i>
-                        </span>
-                        <input type="email" 
-                               class="form-control @error('email') is-invalid @enderror" 
-                               id="email" 
-                               name="email" 
-                               value="{{ old('email') }}" 
-                               placeholder="Enter your email"
+            @if (session()->has('otp_code'))
+                {{-- OTP verification step --}}
+                @if (session('status'))
+                    <div class="alert alert-info">{{ session('status') }}</div>
+                @endif
+
+                <form method="POST" action="{{ route('login') }}" id="otpForm">
+                    @csrf
+
+                    <input type="hidden" name="email" value="{{ old('email', session('otp_email')) }}">
+
+                    <div class="mb-3">
+                        <label for="otp" class="form-label">Verification Code</label>
+                        <input type="text"
+                               class="form-control @error('otp') is-invalid @enderror"
+                               id="otp"
+                               name="otp"
+                               placeholder="Enter 6-digit code"
+                               maxlength="6"
+                               pattern="\d*"
                                required
                                autofocus>
+                        @error('otp')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <div class="form-text">
+                            We sent a 6-digit code to <strong>{{ session('otp_email') }}</strong>. Enter it here to complete sign in.
+                        </div>
                     </div>
-                    @error('email')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
 
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="bi bi-lock"></i>
-                        </span>
-                        <input type="password" 
-                               class="form-control @error('password') is-invalid @enderror" 
-                               id="password" 
-                               name="password" 
-                               placeholder="Enter your password"
-                               required>
-                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                            <i class="bi bi-eye" id="passwordIcon"></i>
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-login">
+                            <i class="bi bi-shield-lock me-2"></i>
+                            Verify & Sign In
                         </button>
                     </div>
-                    @error('password')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+                </form>
+            @else
+                {{-- Email/password step --}}
+                <form method="POST" action="{{ route('login') }}" id="loginForm">
+                    @csrf
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-envelope"></i>
+                            </span>
+                            <input type="email" 
+                                   class="form-control @error('email') is-invalid @enderror" 
+                                   id="email" 
+                                   name="email" 
+                                   value="{{ old('email') }}" 
+                                   placeholder="Enter your email"
+                                   required
+                                   autofocus>
+                        </div>
+                        @error('email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                <div class="mb-3 form-check">
-                    <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                    <label class="form-check-label" for="remember">
-                        Remember me
-                    </label>
-                </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock"></i>
+                            </span>
+                            <input type="password" 
+                                   class="form-control @error('password') is-invalid @enderror" 
+                                   id="password" 
+                                   name="password" 
+                                   placeholder="Enter your password"
+                                   required>
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="bi bi-eye" id="passwordIcon"></i>
+                            </button>
+                        </div>
+                        @error('password')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
 
-                <div class="d-grid mb-3">
-                    <button type="submit" class="btn btn-login" id="loginBtn">
-                        <i class="bi bi-box-arrow-in-right me-2"></i>
-                        <span id="btnText">Sign In</span>
-                    </button>
-                </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                        <label class="form-check-label" for="remember">
+                            Remember me
+                        </label>
+                    </div>
 
-                <div class="text-center">
-                    <a href="#" class="btn-forgot">Forgot Password?</a>
-                </div>
-            </form>
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-login" id="loginBtn">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            <span id="btnText">Sign In</span>
+                        </button>
+                    </div>
+
+                    <div class="text-center">
+                        <a href="#" class="btn-forgot">Forgot Password?</a>
+                    </div>
+                </form>
+            @endif
 
             <div class="text-center mt-4">
                 <hr>

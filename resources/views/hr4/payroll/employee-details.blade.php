@@ -26,18 +26,18 @@
                     <!-- Search Section -->
                     <div class="row mb-4">
                         <div class="col-md-6">
-                            <div class="input-group">
+                            <form method="GET" action="{{ route('payroll.employee-details') }}" class="input-group" id="searchForm">
                                 <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input type="text" class="form-control" id="searchInput" placeholder="Search employees...">
-                            </div>
+                                <input type="text" class="form-control" name="search" id="searchInput" placeholder="Search employees..." value="{{ request('search') }}">
+                            </form>
                         </div>
                         <div class="col-md-6 text-end">
-                            <button class="btn btn-primary me-2" id="applySearch">
+                            <button class="btn btn-primary me-2" type="submit" form="searchForm">
                                 <i class="bi bi-search me-1"></i>Search
                             </button>
-                            <button class="btn btn-outline-secondary" id="clearSearch">
+                            <a class="btn btn-outline-secondary" href="{{ route('payroll.employee-details') }}">
                                 <i class="bi bi-x-circle me-1"></i>Clear
-                            </button>
+                            </a>
                         </div>
                     </div>
 
@@ -46,7 +46,6 @@
                         <table class="table table-striped table-hover" id="employeeTable">
                             <thead>
                                 <tr>
-                                    <th>Employee ID</th>
                                     <th>Employee Name</th>
                                     <th>Department</th>
                                     <th>Position</th>
@@ -59,7 +58,6 @@
                             <tbody id="employeeTableBody">
                                 @forelse($employees as $employee)
                                 <tr>
-                                    <td>{{ $employee['employee_id'] }}</td>
                                     <td>{{ $employee['name'] }}</td>
                                     <td>{{ $employee['department'] }}</td>
                                     <td>{{ $employee['position'] }}</td>
@@ -74,11 +72,15 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="8" class="text-center py-4">No employees found.</td>
+                                    <td colspan="7" class="text-center py-4">No employees found.</td>
                                 </tr>
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+
+                    <div class="d-flex justify-content-center mt-3">
+                        {{ $employees->links('pagination::bootstrap-4') }}
                     </div>
                 </div>
             </div>
@@ -405,34 +407,11 @@ document.getElementById('printEmployee').addEventListener('click', function() {
 });
 
 // Search functionality
-document.getElementById('applySearch').addEventListener('click', function() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const rows = document.querySelectorAll('#employeeTableBody tr');
-    
-    rows.forEach(row => {
-        const employeeName = row.cells[1].textContent.toLowerCase();
-        const employeeId = row.cells[0].textContent.toLowerCase();
-        const shouldShow = !searchTerm || employeeName.includes(searchTerm) || employeeId.includes(searchTerm);
-        row.style.display = shouldShow ? '' : 'none';
-    });
-    
-    showNotification('Search applied successfully!', 'success');
-});
-
-document.getElementById('clearSearch').addEventListener('click', function() {
-    document.getElementById('searchInput').value = '';
-    
-    const rows = document.querySelectorAll('#employeeTableBody tr');
-    rows.forEach(row => {
-        row.style.display = '';
-    });
-    
-    showNotification('Search cleared!', 'info');
-});
+// Search is handled server-side via GET form submission.
 
 // Export to Excel functionality
 document.getElementById('exportExcel').addEventListener('click', function() {
-    const searchTerm = document.getElementById('searchInput').value;
+    const searchTerm = document.getElementById('searchInput') ? document.getElementById('searchInput').value : '';
     
     // Redirect to export endpoint with search parameter
     const url = `/payroll/employee-details/export${searchTerm ? '?search=' + encodeURIComponent(searchTerm) : ''}`;

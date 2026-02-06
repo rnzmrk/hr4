@@ -229,8 +229,48 @@
                                         </tbody>
                                     </table>
                                 </div>
+
+                                <div class="d-flex justify-content-center mt-3" id="payrollPagination"></div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header fw-semibold">Totals (Current Filter)</div>
+                <div class="card-body p-2">
+                    <div class="table-responsive mb-0">
+                        <table class="table table-bordered table-sm mb-0" id="payrollTotalsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Total Salary</th>
+                                    <th>Total Incentives</th>
+                                    <th>Total SSS</th>
+                                    <th>Total PhilHealth</th>
+                                    <th>Total Pag-IBIG</th>
+                                    <th>Total Income Tax</th>
+                                    <th>Total Net Salary</th>
+                                    <th>Employees Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id="totalSalary">₱0.00</td>
+                                    <td id="totalIncentives">₱0.00</td>
+                                    <td id="totalSSS">₱0.00</td>
+                                    <td id="totalPhilHealth">₱0.00</td>
+                                    <td id="totalPagibig">₱0.00</td>
+                                    <td id="totalIncomeTax">₱0.00</td>
+                                    <td id="totalNetSalary">₱0.00</td>
+                                    <td id="totalEmployees">0</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -612,7 +652,7 @@ function savePayroll() {
 }
 
 // Load payroll records
-function loadPayrollRecords() {
+function loadPayrollRecords(page = 1) {
     const filterType = document.getElementById('filterType')?.value || 'monthly';
     const filterDate = document.getElementById('filterDate')?.value || document.getElementById('filterMonth')?.value || new Date().toISOString().split('T')[0];
     const tableSearch = document.getElementById('tableSearch')?.value || '';
@@ -621,15 +661,81 @@ function loadPayrollRecords() {
     if (filterType) params.append('filter_type', filterType);
     if (filterDate) params.append('filter_date', filterDate);
     if (tableSearch) params.append('search', tableSearch);
+    if (page) params.append('page', String(page));
     
     fetch(`/payroll/get-payroll-records?${params.toString()}`)
         .then(response => response.json())
         .then(data => {
             updatePayrollTable(data.data || []);
+            renderPayrollPagination(data);
+            updatePayrollTotals(data);
         })
         .catch(error => {
             console.error('Error loading payroll records:', error);
         });
+}
+
+function formatPeso(value) {
+    const n = Number(value || 0);
+    return `₱${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function updatePayrollTotals(payload) {
+    const totals = payload?.totals;
+    const employeeCount = payload?.employee_count;
+
+    const elSalary = document.getElementById('totalSalary');
+    const elIncentives = document.getElementById('totalIncentives');
+    const elSSS = document.getElementById('totalSSS');
+    const elPhilHealth = document.getElementById('totalPhilHealth');
+    const elPagibig = document.getElementById('totalPagibig');
+    const elIncomeTax = document.getElementById('totalIncomeTax');
+    const elNetSalary = document.getElementById('totalNetSalary');
+    const elEmployees = document.getElementById('totalEmployees');
+
+    if (!elSalary || !elIncentives || !elSSS || !elPhilHealth || !elPagibig || !elIncomeTax || !elNetSalary || !elEmployees) {
+        return;
+    }
+
+    elSalary.textContent = formatPeso(totals?.total_salary);
+    elIncentives.textContent = formatPeso(totals?.total_incentives);
+    elSSS.textContent = formatPeso(totals?.total_sss);
+    elPhilHealth.textContent = formatPeso(totals?.total_philhealth);
+    elPagibig.textContent = formatPeso(totals?.total_pagibig);
+    elIncomeTax.textContent = formatPeso(totals?.total_income_tax);
+    elNetSalary.textContent = formatPeso(totals?.total_net_pay);
+    elEmployees.textContent = String(Number(employeeCount || 0));
+}
+
+function renderPayrollPagination(paginator) {
+    const container = document.getElementById('payrollPagination');
+    if (!container) return;
+
+    const links = paginator?.links;
+    const currentPage = paginator?.current_page;
+    const lastPage = paginator?.last_page;
+
+    if (!Array.isArray(links) || !currentPage || !lastPage || lastPage <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+
+    const itemsHtml = links.map(link => {
+        const label = (link.label || '').toString()
+            .replace('&laquo;', '«')
+            .replace('&raquo;', '»');
+
+        if (link.url === null) {
+            return `<li class="page-item disabled"><span class="page-link">${label}</span></li>`;
+        }
+
+        const isActive = !!link.active;
+        const url = new URL(link.url);
+        const page = url.searchParams.get('page') || '1';
+        return `<li class="page-item ${isActive ? 'active' : ''}"><button type="button" class="page-link" data-payroll-page="${page}">${label}</button></li>`;
+    }).join('');
+
+    container.innerHTML = `<nav aria-label="Payroll records pagination"><ul class="pagination pagination-sm mb-0">${itemsHtml}</ul></nav>`;
 }
 
 // Update payroll table
@@ -664,16 +770,25 @@ function updatePayrollTable(payrolls) {
 }
 
 // Filter and search functionality
-document.getElementById('applyFilter')?.addEventListener('click', loadPayrollRecords);
+document.getElementById('applyFilter')?.addEventListener('click', () => loadPayrollRecords(1));
 document.getElementById('clearFilter')?.addEventListener('click', function() {
     document.getElementById('filterType').value = 'monthly';
     document.getElementById('filterMonth').value = new Date().toISOString().slice(0, 7);
     document.getElementById('tableSearch').value = '';
-    loadPayrollRecords();
+    loadPayrollRecords(1);
 });
 
 // Refresh table
-document.getElementById('refreshTable')?.addEventListener('click', loadPayrollRecords);
+document.getElementById('refreshTable')?.addEventListener('click', () => loadPayrollRecords(1));
+
+// Payroll table pagination click handling
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-payroll-page]');
+    if (!btn) return;
+    const page = parseInt(btn.getAttribute('data-payroll-page') || '1', 10);
+    if (!Number.isFinite(page)) return;
+    loadPayrollRecords(page);
+});
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
@@ -684,7 +799,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Load payroll records
-    loadPayrollRecords();
+    loadPayrollRecords(1);
 });
 
 // Handle payroll detail modal

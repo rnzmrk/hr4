@@ -26,29 +26,32 @@ class EmployeeDetailsController extends Controller
                       });
                 });
             })
-            ->orderBy('last_name')
-            ->orderBy('first_name');
+            ->orderByDesc('created_at')
+            ->orderByDesc('id');
 
-        $employees = $employeesQuery->get();
+        $employees = $employeesQuery
+            ->paginate(5)
+            ->appends($request->only('search'));
 
-        // Transform employees data for the view
-        $transformedEmployees = $employees->map(function (Employee $employee) {
-            $benefits = $employee->benefitPlans->pluck('type')->flatten()->unique()->filter()->implode(', ');
-            
-            return [
-                'id' => $employee->id,
-                'employee_id' => 'EMP' . str_pad($employee->id, 3, '0', STR_PAD_LEFT),
-                'name' => trim(($employee->first_name ?? '') . ' ' . ($employee->middle_name ?? '') . ' ' . ($employee->last_name ?? '') . ' ' . ($employee->suffix_name ?? '')),
-                'department' => optional($employee->department)->name ?? '—',
-                'position' => $employee->position ?? '—',
-                'salary' => $employee->salary ? '₱' . number_format($employee->salary, 2) : '₱0.00',
-                'benefits' => $benefits ?: '—',
-                'atm_number' => $employee->atm_number ?? '—',
-            ];
-        });
+        $employees->setCollection(
+            $employees->getCollection()->map(function (Employee $employee) {
+                $benefits = $employee->benefitPlans->pluck('type')->flatten()->unique()->filter()->implode(', ');
+
+                return [
+                    'id' => $employee->id,
+                    'employee_id' => 'EMP' . str_pad($employee->id, 3, '0', STR_PAD_LEFT),
+                    'name' => trim(($employee->first_name ?? '') . ' ' . ($employee->middle_name ?? '') . ' ' . ($employee->last_name ?? '') . ' ' . ($employee->suffix_name ?? '')),
+                    'department' => optional($employee->department)->name ?? '—',
+                    'position' => $employee->position ?? '—',
+                    'salary' => $employee->salary ? '₱' . number_format($employee->salary, 2) : '₱0.00',
+                    'benefits' => $benefits ?: '—',
+                    'atm_number' => $employee->atm_number ?? '—',
+                ];
+            })
+        );
 
         return view('hr4.payroll.employee-details', [
-            'employees' => $transformedEmployees
+            'employees' => $employees
         ]);
     }
 

@@ -102,6 +102,10 @@
             <label class="form-label">New Salary<span class="text-danger">*</span></label>
             <input type="number" name="salary" class="form-control" value="{{ $employee->salary ?? 0 }}" min="0" required>
           </div>
+          <div class="mb-3">
+            <label class="form-label">Position</label>
+            <input type="text" name="position" class="form-control" value="{{ $employee->position ?? '' }}">
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>

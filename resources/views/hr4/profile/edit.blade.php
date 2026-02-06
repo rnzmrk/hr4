@@ -15,8 +15,36 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form action="#" method="POST" enctype="multipart/form-data">
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    @if (session('success'))
+                        <div class="alert alert-success">{{ session('success') }}</div>
+                    @endif
+
+                    @php
+                        $employeeData = $employee ?? [];
+                        $employeeName = $employeeData
+                            ? trim(($employeeData['first_name'] ?? '') . ' ' . ($employeeData['middle_name'] ?? '') . ' ' . ($employeeData['last_name'] ?? '') . ' ' . ($employeeData['suffix_name'] ?? ''))
+                            : ($user->name ?? '');
+                        $departmentName = $employeeData['department']['name'] ?? null;
+                        $position = $employeeData['position'] ?? null;
+                        $rawProfilePic = $account['profile_picture'] ?? null;
+                        $profilePic = $rawProfilePic
+                            ? 'https://hr4.jetlougetravels-ph.com/storage/profile_pictures/' . $rawProfilePic
+                            : asset('images/default-avatar.png');
+                    @endphp
+
+                    <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
                         @csrf
+                        @method('PATCH')
                         
                         <div class="row">
                             <!-- Profile Picture Column -->
@@ -25,7 +53,7 @@
                                     <div class="mb-3">
                                         <label for="profile_picture" class="form-label fw-bold">Profile Picture</label>
                                         <div class="position-relative d-inline-block">
-                                            <img src="{{ asset('images/default-avatar.png') }}" 
+                                            <img src="{{ $profilePic }}" 
                                                  alt="Profile Picture" 
                                                  class="rounded-circle border border-3 border-primary" 
                                                  style="width: 150px; height: 150px; object-fit: cover;"
@@ -44,7 +72,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+                        
                             <!-- Form Fields Column -->
                             <div class="col-md-8">
                                 <div class="row">
@@ -55,7 +83,7 @@
                                                    class="form-control" 
                                                    id="name" 
                                                    name="name" 
-                                                   value="John Doe" 
+                                                   value="{{ $employeeName }}" 
                                                    readonly>
                                             <div class="form-text">Cannot be modified</div>
                                         </div>
@@ -71,11 +99,14 @@
                                                     <i class="bi bi-envelope"></i>
                                                 </span>
                                                 <input type="email" 
-                                                       class="form-control border-success" 
+                                                       class="form-control border-success @error('email') is-invalid @enderror" 
                                                        id="email" 
                                                        name="email" 
-                                                       value="john.doe@example.com" 
+                                                       value="{{ old('email', $employeeData['email'] ?? $user->email) }}" 
                                                        required>
+                                                @error('email')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                             <div class="form-text">You can update your email address</div>
                                         </div>
@@ -87,7 +118,7 @@
                                                    class="form-control" 
                                                    id="employee_id" 
                                                    name="employee_id" 
-                                                   value="EMP001" 
+                                                   value="{{ $employeeData['id'] ?? '' }}" 
                                                    readonly>
                                             <div class="form-text">Cannot be modified</div>
                                         </div>
@@ -95,13 +126,11 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="department" class="form-label fw-bold">Department</label>
-                                            <select class="form-select" id="department" name="department" disabled>
-                                                <option value="Human Resources" selected>Human Resources</option>
-                                                <option value="Information Technology">Information Technology</option>
-                                                <option value="Finance">Finance</option>
-                                                <option value="Marketing">Marketing</option>
-                                                <option value="Operations">Operations</option>
-                                            </select>
+                                            <input type="text"
+                                                   class="form-control"
+                                                   id="department"
+                                                   value="{{ $departmentName ?: 'N/A' }}"
+                                                   readonly>
                                             <div class="form-text">Cannot be modified</div>
                                         </div>
                                     </div>
@@ -112,7 +141,7 @@
                                                    class="form-control" 
                                                    id="position" 
                                                    name="position" 
-                                                   value="Administrator" 
+                                                   value="{{ $position ?: 'N/A' }}" 
                                                    readonly>
                                             <div class="form-text">Cannot be modified</div>
                                         </div>
@@ -131,7 +160,10 @@
                                                        class="form-control border-success" 
                                                        id="phone" 
                                                        name="phone" 
-                                                       value="+63 912 345 6789">
+                                                       value="{{ old('phone', $employeeData['phone'] ?? '') }}">
+                                                @error('phone')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                             <div class="form-text">You can update your phone number</div>
                                         </div>
@@ -142,12 +174,40 @@
                                     <div class="col-12">
                                         <div class="mb-3">
                                             <label for="address" class="form-label fw-bold">Address</label>
-                                            <textarea class="form-control" 
+                                            <textarea class="form-control @error('address') is-invalid @enderror" 
                                                       id="address" 
                                                       name="address" 
-                                                      rows="3" 
-                                                      readonly>123 Main Street, Manila, Philippines</textarea>
-                                            <div class="form-text">Cannot be modified</div>
+                                                      rows="3">{{ old('address', $employeeData['address'] ?? '') }}</textarea>
+                                            @error('address')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="password" class="form-label fw-bold">New Password (optional)</label>
+                                            <input type="password" 
+                                                   class="form-control @error('password') is-invalid @enderror" 
+                                                   id="password" 
+                                                   name="password" 
+                                                   autocomplete="new-password">
+                                            <div class="form-text">Leave blank to keep your current password.</div>
+                                            @error('password')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="password_confirmation" class="form-label fw-bold">Confirm New Password</label>
+                                            <input type="password" 
+                                                   class="form-control" 
+                                                   id="password_confirmation" 
+                                                   name="password_confirmation" 
+                                                   autocomplete="new-password">
                                         </div>
                                     </div>
                                 </div>

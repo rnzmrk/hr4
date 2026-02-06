@@ -188,7 +188,9 @@ class PayrollController extends Controller
     public function getPayrollRecords(Request $request)
     {
         $query = Payroll::with('employee')
-            ->orderBy('pay_date', 'desc');
+            ->orderByDesc('pay_date')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id');
 
         // Apply filters
         if ($request->filled('search')) {
@@ -218,9 +220,28 @@ class PayrollController extends Controller
             }
         }
 
-        $payrolls = $query->paginate(15);
+        $totalsQuery = (clone $query)->reorder();
 
-        return response()->json($payrolls);
+        $totals = $totalsQuery->selectRaw('COALESCE(SUM(salary),0) as total_salary')
+            ->selectRaw('COALESCE(SUM(incentives),0) as total_incentives')
+            ->selectRaw('COALESCE(SUM(sss),0) as total_sss')
+            ->selectRaw('COALESCE(SUM(philhealth),0) as total_philhealth')
+            ->selectRaw('COALESCE(SUM(pagibig),0) as total_pagibig')
+            ->selectRaw('COALESCE(SUM(income_tax),0) as total_income_tax')
+            ->selectRaw('COALESCE(SUM(net_pay),0) as total_net_pay')
+            ->first();
+
+        $employeeCount = (clone $query)->reorder()->distinct('employee_id')->count('employee_id');
+
+        $payrolls = $query->paginate(5)->appends($request->query());
+
+        return response()->json(array_merge(
+            $payrolls->toArray(),
+            [
+                'totals' => $totals,
+                'employee_count' => $employeeCount,
+            ]
+        ));
     }
 
     /**

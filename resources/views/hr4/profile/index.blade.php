@@ -18,12 +18,23 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="text-center mb-4">
-                                <img src="{{ asset('images/default-avatar.png') }}" 
+                                @php
+                                    $employeeName = $employee
+                                        ? trim(($employee['first_name'] ?? '') . ' ' . ($employee['middle_name'] ?? '') . ' ' . ($employee['last_name'] ?? '') . ' ' . ($employee['suffix_name'] ?? ''))
+                                        : ($user->name ?? '');
+                                    $position = $employee['position'] ?? null;
+                                    $departmentName = $employee['department']['name'] ?? null;
+                                    $rawProfilePic = $account['profile_picture'] ?? null;
+                                    $profilePicUrl = $rawProfilePic
+                                        ? 'https://hr4.jetlougetravels-ph.com/storage/profile_pictures/' . $rawProfilePic
+                                        : asset('images/default-avatar.png');
+                                @endphp
+                                <img src="{{ $profilePicUrl }}" 
                                      alt="Profile Picture" 
                                      class="rounded-circle img-fluid" 
                                      style="width: 150px; height: 150px; object-fit: cover; border: 4px solid var(--jetlouge-primary);">
-                                <h4 class="mt-3 mb-1">John Doe</h4>
-                                <p class="text-muted">Administrator</p>
+                                <h4 class="mt-3 mb-1">{{ $employeeName ?: 'N/A' }}</h4>
+                                <p class="text-muted">{{ $position ?: 'N/A' }}</p>
                             </div>
                         </div>
                         <div class="col-md-8">
@@ -31,37 +42,43 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold">Employee ID</label>
-                                        <p class="form-control-plaintext">EMP001</p>
+                                        <p class="form-control-plaintext">{{ $employee['id'] ?? 'N/A' }}</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold">Email Address</label>
-                                        <p class="form-control-plaintext">john.doe@example.com</p>
+                                        <p class="form-control-plaintext">{{ $employee['email'] ?? $user->email }}</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold">Department</label>
-                                        <p class="form-control-plaintext">Human Resources</p>
+                                        <p class="form-control-plaintext">{{ $departmentName ?: 'N/A' }}</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold">Position</label>
-                                        <p class="form-control-plaintext">Administrator</p>
+                                        <p class="form-control-plaintext">{{ $position ?: 'N/A' }}</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold">Phone Number</label>
-                                        <p class="form-control-plaintext">+63 912 345 6789</p>
+                                        <p class="form-control-plaintext">{{ $employee['phone'] ?? 'N/A' }}</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold">Date Joined</label>
-                                        <p class="form-control-plaintext">January 1, 2024</p>
+                                        <p class="form-control-plaintext">
+                                            @if(!empty($employee['date_hired']))
+                                                {{ \Carbon\Carbon::parse($employee['date_hired'])->format('M d, Y') }}
+                                            @else
+                                                N/A
+                                            @endif
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -70,7 +87,7 @@
                                 <div class="col-12">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold">Address</label>
-                                        <p class="form-control-plaintext">123 Main Street, Manila, Philippines</p>
+                                        <p class="form-control-plaintext">{{ $employee['address'] ?? 'N/A' }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -103,7 +120,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="#" method="POST">
+            <form action="{{ route('profile.change_password') }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">

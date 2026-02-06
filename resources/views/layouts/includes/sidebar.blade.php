@@ -3,14 +3,57 @@
 
     {{-- Profile Section --}}
     <div @class('profile-section text-center')>
+        @php
+            $loggedIn = Auth::user();
+            $sidebarName = $loggedIn->name ?? 'John Doe';
+            $sidebarPosition = 'Administrator';
+            $sidebarAvatar = asset('images/default-avatar.png');
+
+            try {
+                if ($loggedIn && $loggedIn->email) {
+                    $response = \Illuminate\Support\Facades\Http::withoutVerifying()->get('https://hr4.jetlougetravels-ph.com/api/accounts');
+
+                    if ($response->successful()) {
+                        $payload = $response->json();
+
+                        $systemAccounts = \Illuminate\Support\Arr::get($payload, 'system_accounts');
+                        if (!is_array($systemAccounts)) {
+                            $systemAccounts = \Illuminate\Support\Arr::get($payload, 'data.system_accounts', []);
+                        }
+
+                        $matched = collect($systemAccounts)->first(function ($account) use ($loggedIn) {
+                            $employee = $account['employee'] ?? null;
+                            $apiEmail = isset($employee['email']) ? trim($employee['email']) : '';
+
+                            return ($account['account_type'] ?? null) === 'system'
+                                && !($account['blocked'] ?? false)
+                                && $employee
+                                && strcasecmp($apiEmail, trim($loggedIn->email)) === 0;
+                        });
+
+                        if ($matched) {
+                            $employee = $matched['employee'] ?? [];
+                            $sidebarName = trim(($employee['first_name'] ?? '') . ' ' . ($employee['middle_name'] ?? '') . ' ' . ($employee['last_name'] ?? '') . ' ' . ($employee['suffix_name'] ?? '')) ?: $sidebarName;
+                            $sidebarPosition = $employee['position'] ?? $sidebarPosition;
+
+                            if (!empty($matched['profile_picture'])) {
+                                $sidebarAvatar = 'https://hr4.jetlougetravels-ph.com/storage/profile_pictures/' . $matched['profile_picture'];
+                            }
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Fallbacks already set above
+            }
+        @endphp
         <a href="{{ route('profile.index') }}" class="text-decoration-none">
-            <img src="{{ asset('images/default-avatar.png') }}"
-                alt="Admin Profile" class="profile-img mb-2">
-            <h6 @class('fw-semibold mb-1 text-dark')>{{ Auth::user()->name ?? 'John Doe' }}</h6>
-            <small @class('text-muted')>{{ Auth::user()->position ?? 'Administrator' }}</small>
+            <img src="{{ $sidebarAvatar }}"
+                alt="{{ $sidebarName }}" class="profile-img mb-2">
+            <h6 @class('fw-semibold mb-1 text-dark')>{{ $sidebarName }}</h6>
+            <small @class('text-muted')>{{ $sidebarPosition }}</small>
         </a>
     </div>
-
+        
     {{-- Navigation Menu --}}
     <ul @class('nav flex-column')>
         <li @class('nav-item')>

@@ -54,23 +54,23 @@
 
             <!-- Performance Management Graphs -->
             <div class="row g-3 mt-4">
-                <div class="col-12 col-lg-6">
+                <div class="col-12 col-md-6">
                     <div class="card shadow-sm h-100">
                         <div class="card-body">
                             <h6 class="fw-bold mb-3">Performance Rating Distribution</h6>
-                            <canvas id="performanceRatingChart" width="400" height="200"></canvas>
+                            <div style="position: relative; height: 260px;">
+                                <canvas id="performanceRatingChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Attendance & Leave Graphs -->
-            <div class="row g-3 mt-4">
-                <div class="col-12 col-lg-6">
+                <div class="col-12 col-md-6">
                     <div class="card shadow-sm h-100">
                         <div class="card-body">
-                            <h6 class="fw-bold mb-3">Leave Type Distribution</h6>
-                            <canvas id="leaveTypeChart" width="400" height="200"></canvas>
+                            <h6 class="fw-bold mb-3">Salary Distribution</h6>
+                            <div style="position: relative; height: 260px;">
+                                <canvas id="salaryDistributionChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -78,30 +78,23 @@
 
             <!-- Salary & Payroll Graphs -->
             <div class="row g-3 mt-4">
-                <div class="col-12 col-lg-6">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body">
-                            <h6 class="fw-bold mb-3">Salary Distribution</h6>
-                            <canvas id="salaryDistributionChart" width="400" height="200"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 col-lg-6">
+                <div class="col-12 col-md-6">
                     <div class="card shadow-sm h-100">
                         <div class="card-body">
                             <h6 class="fw-bold mb-3">Average Salary by Department</h6>
-                            <canvas id="salaryByDeptChart" width="400" height="200"></canvas>
+                            <div style="position: relative; height: 260px;">
+                                <canvas id="salaryByDeptChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="row g-3 mt-4">
-                <div class="col-12 col-lg-6">
+                <div class="col-12 col-md-6">
                     <div class="card shadow-sm h-100">
                         <div class="card-body">
                             <h6 class="fw-bold mb-3">Payroll Cost per Month</h6>
-                            <canvas id="payrollCostChart" width="400" height="200"></canvas>
+                            <div style="position: relative; height: 260px;">
+                                <canvas id="payrollCostChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -129,68 +122,103 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-
-
-
-    // Leave Type Distribution - Pie Chart
-    const leaveTypeCtx = document.getElementById('leaveTypeChart').getContext('2d');
-    new Chart(leaveTypeCtx, {
-        type: 'pie',
-        data: {
-            labels: ['Sick', 'Vacation', 'Emergency'],
-            datasets: [{
-                data: [40, 45, 15],
-                backgroundColor: ['#f6c23e', '#1cc88a', '#e74a3b']
-            }]
-        }
-    });
-
-
-    // Salary Distribution - Histogram
+    // Salary Distribution - Histogram (real data)
     const salaryDistributionCtx = document.getElementById('salaryDistributionChart').getContext('2d');
-    new Chart(salaryDistributionCtx, {
-        type: 'bar',
-        data: {
-            labels: ['20-30k', '30-40k', '40-50k', '50-60k', '60-70k', '70k+'],
-            datasets: [{
-                label: 'Number of Employees',
-                data: [25, 45, 68, 52, 35, 22],
-                backgroundColor: '#4e73df'
-            }]
-        }
-    });
 
-    // Average Salary by Department - Bar Chart
+    fetch("{{ route('dashboard.salary-distribution') }}")
+        .then(response => response.json())
+        .then(payload => {
+            const labels = payload.labels || [];
+            const counts = payload.counts || [];
+            const totals = payload.totals || [];
+
+            new Chart(salaryDistributionCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Employees',
+                        data: counts,
+                        backgroundColor: '#4e73df'
+                    }]
+                },
+                options: {
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const index = context.dataIndex;
+                                    const count = counts[index] ?? 0;
+                                    const total = totals[index] ?? 0;
+                                    const totalFormatted = `₱${Number(total).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                                    return [
+                                        `Employees: ${count}`,
+                                        `Total Salary: ${totalFormatted}`,
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading salary distribution data:', error);
+        });
+
+    // Average Salary by Department - Bar Chart (real data)
     const salaryByDeptCtx = document.getElementById('salaryByDeptChart').getContext('2d');
-    new Chart(salaryByDeptCtx, {
-        type: 'bar',
-        data: {
-            labels: ['IT', 'HR', 'Finance', 'Sales', 'Operations'],
-            datasets: [{
-                label: 'Average Salary (₱)',
-                data: [65000, 45000, 58000, 52000, 48000],
-                backgroundColor: '#1cc88a'
-            }]
-        }
-    });
+
+    fetch("{{ route('dashboard.salary-by-department') }}")
+        .then(response => response.json())
+        .then(payload => {
+            const labels = payload.labels || [];
+            const averages = payload.averages || [];
+
+            new Chart(salaryByDeptCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Average Salary (₱)',
+                        data: averages,
+                        backgroundColor: '#1cc88a'
+                    }]
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading salary by department data:', error);
+        });
 
 
-    // Payroll Cost per Month - Area Chart
+    // Payroll Cost per Month - Area Chart (real data)
     const payrollCostCtx = document.getElementById('payrollCostChart').getContext('2d');
-    new Chart(payrollCostCtx, {
-        type: 'line',
-        data: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-            datasets: [{
-                label: 'Payroll Cost (₱)',
-                data: [2800000, 2850000, 2900000, 2920000, 2950000, 2980000],
-                borderColor: '#4e73df',
-                backgroundColor: 'rgba(78, 115, 223, 0.1)',
-                fill: true,
-                tension: 0.1
-            }]
-        }
-    });
+
+    fetch("{{ route('dashboard.payroll-cost') }}")
+        .then(response => response.json())
+        .then(payload => {
+            const labels = payload.labels || [];
+            const totals = payload.totals || [];
+
+            new Chart(payrollCostCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Payroll Cost (₱)',
+                        data: totals,
+                        borderColor: '#4e73df',
+                        backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                        fill: true,
+                        tension: 0.1
+                    }]
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading payroll cost data:', error);
+        });
 });
 </script>
 @endsection

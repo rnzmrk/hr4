@@ -21,20 +21,6 @@
 @endpush
 
 @section('content')
-<div class="page-header-container mb-4">
-  <div class="d-flex justify-content-between align-items-center page-header">
-    <div class="d-flex align-items-center">
-      <div class="dashboard-logo me-3">
-        <img src="{{ asset('images/logo.png') }}" alt="Jetlouge Travels" class="logo-img">
-      </div>
-      <div>
-        <h2 class="fw-bold mb-1">Vehicle Reservation</h2>
-        <p class="text-muted mb-0">Reserve vehicles for upcoming trips</p>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="row">
   <div class="col-12 order-1 mb-4">
     <div class="card h-100">

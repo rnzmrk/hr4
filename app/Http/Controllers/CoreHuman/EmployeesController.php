@@ -27,7 +27,7 @@ class EmployeesController extends Controller
                       });
                 });
             })
-            ->orderBy('created_at');
+            ->latest();
 
         $employees = $employeesQuery->paginate(5, ['*'], 'employeePage');
 

@@ -22,14 +22,6 @@
         @endif
       </form>
     </div>
-    <div class="d-flex gap-2">
-      <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createAccountModal" data-account-type="system">
-        <i class="bi bi-building-gear me-1"></i> Create System Account (by department & position)
-      </button>
-      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAccountModal" data-account-type="ess">
-        <i class="bi bi-person-plus me-1"></i> Create ESS Account (employees)
-      </button>
-    </div>
   </div>
 
   {{-- Flash message --}}
@@ -55,7 +47,6 @@
               <th>Email</th>
               <th>Department</th>
               <th>Position</th>
-              <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -66,13 +57,6 @@
                 <td>{{ $acc->employee ? $acc->employee->email : $acc->email }}</td>
                 <td>{{ $acc->employee && $acc->employee->department ? $acc->employee->department->name : ($acc->department ?? '') }}</td>
                 <td>{{ $acc->employee ? $acc->employee->position : ($acc->role ?? '') }}</td>
-                <td>
-                  @if($acc->blocked)
-                    <span class="badge bg-danger">Blocked</span>
-                  @else
-                    <span class="badge bg-success">Active</span>
-                  @endif
-                </td>
                 <td>
                   <div class="btn-group">
                     <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#viewAccountModal"
@@ -97,27 +81,15 @@
                       data-position="{{ $acc->employee->position ?? '' }}"
                       data-role="{{ $acc->employee->role ?? '' }}"
                       data-department="{{ $acc->employee && $acc->employee->department ? $acc->employee->department->name : '' }}"
-                      data-pass-plain="{{ $acc->password ?? '' }}"
-                      data-status="{{ $acc->blocked ? 'Blocked' : 'Active' }}">
+                      data-pass-plain="{{ $acc->password ?? '' }}">
                       <i class="bi bi-pencil"></i>
                     </button>
-                    <form method="POST" action="{{ route('accounts.block') }}" class="d-inline">
-                      @csrf
-                      <input type="hidden" name="id" value="{{ $acc->id }}">
-                      <button type="submit" class="btn btn-light btn-sm" title="{{ $acc->blocked ? 'Unblock' : 'Block' }}">
-                        @if($acc->blocked)
-                          <i class="bi bi-unlock"></i>
-                        @else
-                          <i class="bi bi-lock"></i>
-                        @endif
-                      </button>
-                    </form>
                   </div>
                 </td>
               </tr>
             @empty
               <tr>
-                <td colspan="7" class="text-center text-muted">No system accounts found.</td>
+                <td colspan="5" class="text-center text-muted">No system accounts found.</td>
               </tr>
             @endforelse
           </tbody>
@@ -145,7 +117,6 @@
               <th>Email</th>
               <th>Department</th>
               <th>Position</th>
-              <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -156,13 +127,6 @@
                 <td>{{ $acc->employee ? $acc->employee->email : $acc->email }}</td>
                 <td>{{ $acc->employee && $acc->employee->department ? $acc->employee->department->name : ($acc->department ?? '') }}</td>
                 <td>{{ $acc->employee ? $acc->employee->position : ($acc->role ?? '') }}</td>
-                <td>
-                  @if($acc->blocked)
-                    <span class="badge bg-danger">Blocked</span>
-                  @else
-                    <span class="badge bg-success">Active</span>
-                  @endif
-                </td>
                 <td>
                   <div class="btn-group">
                     <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#viewAccountModal"
@@ -187,27 +151,15 @@
                       data-position="{{ $acc->employee->position ?? '' }}"
                       data-role="{{ $acc->employee->role ?? '' }}"
                       data-department="{{ $acc->employee && $acc->employee->department ? $acc->employee->department->name : '' }}"
-                      data-pass-plain="{{ $acc->password ?? '' }}"
-                      data-status="{{ $acc->blocked ? 'Blocked' : 'Active' }}">
+                      data-pass-plain="{{ $acc->password ?? '' }}">
                       <i class="bi bi-pencil"></i>
                     </button>
-                    <form method="POST" action="{{ route('accounts.block') }}" class="d-inline">
-                      @csrf
-                      <input type="hidden" name="id" value="{{ $acc->id }}">
-                      <button type="submit" class="btn btn-light btn-sm" title="{{ $acc->blocked ? 'Unblock' : 'Block' }}">
-                        @if($acc->blocked)
-                          <i class="bi bi-unlock"></i>
-                        @else
-                          <i class="bi bi-lock"></i>
-                        @endif
-                      </button>
-                    </form>
                   </div>
                 </td>
               </tr>
             @empty
               <tr>
-                <td colspan="7" class="text-center text-muted">No ESS accounts found.</td>
+                <td colspan="5" class="text-center text-muted">No ESS accounts found.</td>
               </tr>
             @endforelse
           </tbody>
@@ -309,14 +261,6 @@
               <input type="text" name="department" id="edit_department" class="form-control">
             </div>
             <div class="col-md-6">
-              <label class="form-label small text-muted">Status</label>
-              <select name="status" id="edit_status" class="form-select">
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-                <option value="Blocked">Blocked</option>
-              </select>
-            </div>
-            <div class="col-md-6">
               <label class="form-label small text-muted">Password</label>
               <input type="password" name="password" id="edit_password" class="form-control" placeholder="Update password">
             </div>
@@ -341,10 +285,6 @@
       <div class="modal-body">
         <div class="row g-3">
           <div class="col-md-6">
-            <label class="form-label small text-muted">ID</label>
-            <input type="text" class="form-control" id="v_id" readonly>
-          </div>
-          <div class="col-md-6">
             <label class="form-label small text-muted">Created</label>
             <input type="text" class="form-control" id="v_created" readonly>
           </div>
@@ -361,20 +301,12 @@
             <input type="text" class="form-control" id="v_type" readonly>
           </div>
           <div class="col-md-6">
-            <label class="form-label small text-muted">Employee ID</label>
-            <input type="text" class="form-control" id="v_employee_id" readonly>
-          </div>
-          <div class="col-md-6">
             <label class="form-label small text-muted">Department</label>
             <input type="text" class="form-control" id="v_department" readonly>
           </div>
           <div class="col-md-6">
             <label class="form-label small text-muted">Position</label>
             <input type="text" class="form-control" id="v_position" readonly>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label small text-muted">Blocked</label>
-            <input type="text" class="form-control" id="v_blocked" readonly>
           </div>
       </div>
       <div class="modal-footer">
@@ -420,7 +352,6 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('edit_email').value = btn.getAttribute('data-email');
     document.getElementById('edit_position').value = btn.getAttribute('data-position') || '';
     document.getElementById('edit_department').value = btn.getAttribute('data-department') || '';
-    document.getElementById('edit_status').value = btn.getAttribute('data-status') || 'Active';
     document.getElementById('edit_password').value = btn.getAttribute('data-pass-plain') || '';
   });
 
@@ -429,15 +360,12 @@ document.addEventListener('DOMContentLoaded', function(){
   viewModal?.addEventListener('show.bs.modal', function (event) {
     const btn = event.relatedTarget;
     if (!btn) return;
-    document.getElementById('v_id').value = btn.getAttribute('data-id') || '';
     document.getElementById('v_created').value = btn.getAttribute('data-created') || '';
     document.getElementById('v_name').value = btn.getAttribute('data-name') || '';
     document.getElementById('v_email').value = btn.getAttribute('data-email') || '';
     document.getElementById('v_type').value = btn.getAttribute('data-type') || '';
-    document.getElementById('v_employee_id').value = btn.getAttribute('data-employee-id') || '';
     document.getElementById('v_department').value = btn.getAttribute('data-department') || '';
     document.getElementById('v_position').value = btn.getAttribute('data-position') || '';
-    document.getElementById('v_blocked').value = btn.getAttribute('data-blocked') || 'No';
   });
 });
 </script>

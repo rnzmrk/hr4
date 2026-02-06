@@ -11,10 +11,10 @@
 @section('content')
 <div class="container-xxl">
     <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center mb-4">
-        <div class="input-group shadow-sm">
+        <form method="GET" action="{{ route('benefits.plans') }}" class="input-group shadow-sm">
             <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
-            <input type="text" id="planSearch" class="form-control border-start-0" placeholder="Search assigned plans...">
-        </div>
+            <input type="text" name="search" class="form-control border-start-0" placeholder="Search assigned plans..." value="{{ request('search') }}">
+        </form>
         <button class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#createPlanModal">
             <i class="bi bi-plus-circle me-2"></i>Assign Benefit Plan
         </button>
@@ -52,7 +52,7 @@
                     </thead>
                     <tbody>
                         @forelse($plans as $plan)
-                            <tr data-search="{{ strtolower(($plan->employee->last_name ?? '') . ' ' . ($plan->employee->first_name ?? '') . ' ' . $plan->type . ' ' . $plan->rate_type) }}">
+                            <tr>
                                 <td class="fw-semibold">
                                     {{ $plan->employee ? $plan->employee->last_name . ', ' . $plan->employee->first_name : $plan->name }}
                                     @if($plan->employee && $plan->employee->position)
@@ -79,6 +79,10 @@
                 </table>
             </div>
         </div>
+    </div>
+
+    <div class="d-flex justify-content-center mt-3">
+        {{ $plans->links('pagination::bootstrap-4') }}
     </div>
 
     {{-- Assign Benefit Modal --}}
@@ -172,8 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const employees = @json($employees);
-    const planSearchInput = document.getElementById('planSearch');
-    const plansTable = document.querySelectorAll('#plansTable tbody tr');
     const employeeSearch = document.getElementById('employeeSearch');
     const employeeResults = document.getElementById('employeeResults');
     const employeeIdInput = document.getElementById('employeeId');
@@ -199,17 +201,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (Array.isArray(initialState.types)) {
         initialState.types.forEach(label => addType(label));
-    }
-
-    // Table search
-    if (planSearchInput) {
-        planSearchInput.addEventListener('input', () => {
-            const query = planSearchInput.value.toLowerCase();
-            plansTable.forEach(row => {
-                const haystack = row.getAttribute('data-search') || '';
-                row.style.display = haystack.includes(query) ? '' : 'none';
-            });
-        });
     }
 
     // Employee search

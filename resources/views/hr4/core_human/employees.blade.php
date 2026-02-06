@@ -175,7 +175,9 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label small text-muted">Position</label>
-                <input type="text" name="position" id="ess_position" class="form-control" placeholder="e.g., Staff, Employee" required>
+                <select name="position" id="ess_position" class="form-select" required>
+                  <option value="" disabled selected>Select position</option>
+                </select>
               </div>
               <div class="col-md-6">
                 <label class="form-label small text-muted">Status</label>
@@ -231,7 +233,9 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label small text-muted">Position</label>
-                <input type="text" name="position" id="sys_position" class="form-control" placeholder="e.g., HR, Manager, Admin" required>
+                <select name="position" id="sys_position" class="form-select" required>
+                  <option value="" disabled selected>Select position</option>
+                </select>
               </div>
               <div class="col-md-6">
                 <label class="form-label small text-muted">Status</label>
@@ -286,6 +290,38 @@ document.addEventListener('DOMContentLoaded', function(){
     const toast = new bootstrap.Toast(toastEl);
     toast.show();
   }
+  // Shared department -> positions mapping (same as DepartmentsController)
+  const positionMappings = {
+    'Financial': ['Financial Staff'],
+    'Core': ['Travel Agent', 'Travel Staff'],
+    'Logistic': ['Driver', 'Fleet Manager', 'Procurement Officer', 'Logistics Staff'],
+    'Human Resource': ['Hr Manager', 'Hr Staff'],
+    'Administrative': ['Administrative Staff']
+  };
+
+  function populatePositions(selectEl, deptName, preselect) {
+    if (!selectEl) return;
+    const positions = positionMappings[deptName] || [];
+    selectEl.innerHTML = '<option value="" disabled>Select position</option>';
+
+    positions.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = p;
+      selectEl.appendChild(opt);
+    });
+
+    if (preselect) {
+      selectEl.value = preselect;
+      if (!selectEl.value && positions.length === 1) {
+        selectEl.value = positions[0];
+      }
+    } else if (positions.length === 1) {
+      selectEl.value = positions[0];
+    } else {
+      selectEl.selectedIndex = 0;
+    }
+  }
 
   const sysModal = document.getElementById('createSystemAccountModal');
   sysModal?.addEventListener('show.bs.modal', function(event){
@@ -295,12 +331,14 @@ document.addEventListener('DOMContentLoaded', function(){
     document.getElementById('sys_email').value = btn.getAttribute('data-email') || '';
     const deptName = btn.getAttribute('data-department') || '';
     const deptSel = document.getElementById('sys_department');
+    const posSel = document.getElementById('sys_position');
     if (deptSel) {
       let matched = false;
       [...deptSel.options].forEach(o => { if (o.text === deptName) { o.selected = true; matched = true; } });
       if (!matched && deptSel.options.length) deptSel.selectedIndex = 0;
     }
-    document.getElementById('sys_position').value = btn.getAttribute('data-position') || '';
+    const effectiveDept = deptSel ? deptSel.value : deptName;
+    populatePositions(posSel, effectiveDept || '', btn.getAttribute('data-position') || '');
     document.getElementById('sys_status').value = 'Active';
     document.getElementById('sys_password').value = '';
   });
@@ -425,8 +463,11 @@ document.addEventListener('DOMContentLoaded', function(){
       const button = event.relatedTarget;
       document.getElementById('ess_name').value = button.getAttribute('data-name') || '';
       document.getElementById('ess_email').value = button.getAttribute('data-email') || '';
-      document.getElementById('ess_department').value = button.getAttribute('data-department') || '';
-      document.getElementById('ess_position').value = button.getAttribute('data-position') || '';
+      const deptInput = document.getElementById('ess_department');
+      const posSel = document.getElementById('ess_position');
+      const deptName = button.getAttribute('data-department') || '';
+      if (deptInput) deptInput.value = deptName;
+      populatePositions(posSel, deptName || '', button.getAttribute('data-position') || '');
     });
   }
 });

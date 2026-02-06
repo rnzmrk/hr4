@@ -9,9 +9,28 @@ use Illuminate\Http\Request;
 
 class BenefitPlansController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $plans = BenefitPlan::with('employee')->latest('assigned_date')->latest()->get();
+        $search = $request->input('search');
+
+        $plans = BenefitPlan::with('employee')
+            ->when($search, function ($query, $search) {
+                $s = trim($search);
+                $query->where(function ($q) use ($s) {
+                    $q->where('type', 'like', "%{$s}%")
+                        ->orWhere('rate_type', 'like', "%{$s}%")
+                        ->orWhere('assigned_date', 'like', "%{$s}%")
+                        ->orWhereHas('employee', function ($empQ) use ($s) {
+                            $empQ->where('first_name', 'like', "%{$s}%")
+                                ->orWhere('last_name', 'like', "%{$s}%")
+                                ->orWhere('position', 'like', "%{$s}%");
+                        });
+                });
+            })
+            ->orderByDesc('assigned_date')
+            ->orderByDesc('created_at')
+            ->paginate(5)
+            ->appends($request->only('search'));
         $employees = Employee::orderBy('last_name')->orderBy('first_name')->get(['id', 'first_name', 'last_name', 'position']);
 
         return view('hr4.benefits.plans', compact('plans', 'employees'));

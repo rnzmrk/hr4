@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Item Request')
+@section('page-title', 'Item Requests')
+@section('page-subtitle', 'Track, review, and manage item requests for smooth inventory and delivery processing')
+@section('breadcrumbs', 'Item Request')
 
 @section('content')
 <!-- CSRF Token Meta Tag -->
@@ -10,7 +12,7 @@
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="mb-0">Item Requests</h4>
+                <div></div>
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createItemRequestModal">
                     <i class="bi bi-plus-circle me-2"></i>Create New Request
                 </button>
@@ -19,6 +21,23 @@
             <!-- Item Requests Table -->
             <div class="card">
                 <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <form method="GET" action="{{ route('request.index') }}" class="input-group" id="requestSearchForm">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" name="search" placeholder="Search requests..." value="{{ request('search') }}">
+                            </form>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <button class="btn btn-primary me-2" type="submit" form="requestSearchForm">
+                                <i class="bi bi-search me-1"></i>Search
+                            </button>
+                            <a class="btn btn-outline-secondary" href="{{ route('request.index') }}">
+                                <i class="bi bi-x-circle me-1"></i>Clear
+                            </a>
+                        </div>
+                    </div>
+
                     <div class="table-responsive">
                         <table class="table table-striped table-hover">
                             <thead>
@@ -35,7 +54,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @if(is_array($requests) && count($requests) > 0)
+                                @if($requests->count() > 0)
                                     @foreach($requests as $request)
                                         <tr>
                                             <td>{{ $request['id'] ?? 'N/A' }}</td>
@@ -80,6 +99,10 @@
                                 @endif
                             </tbody>
                         </table>
+                    </div>
+
+                    <div class="d-flex justify-content-center mt-3">
+                        {{ $requests->links('pagination::bootstrap-4') }}
                     </div>
                 </div>
             </div>
@@ -214,7 +237,7 @@ function showNotification(message, type = 'success') {
 
 function viewRequest(requestId) {
     // Find the request data from the requests array
-    const requests = @json($requests);
+    const requests = @json($requests->items());
     const request = requests.find(r => r.id == requestId);
     
     if (request) {
