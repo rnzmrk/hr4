@@ -6,6 +6,26 @@
 
 @section('content')
 <div class="container-fluid">
+    {{-- Security Verification Status --}}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-shield-check me-2 fs-5"></i>
+            <div class="flex-grow-1">
+                <strong>Security Verified</strong> - You have been granted access to Salary Computation
+                @if(session('salary_computation_verified_at'))
+                    <br><small class="text-muted">Verified at: {{ session('salary_computation_verified_at')->format('g:i A, M j, Y') }}</small>
+                @endif
+            </div>
+            <form method="POST" action="{{ route('payroll.salary-computation.clear_verification') }}" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('This will require you to verify credentials again on next access. Continue?')">
+                    <i class="bi bi-shield-x me-1"></i>Clear Verification
+                </button>
+            </form>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -242,7 +262,10 @@
     <div class="row mt-3">
         <div class="col-12">
             <div class="card">
-                <div class="card-header fw-semibold">Totals (Current Filter)</div>
+                <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+                    <span>Totals (Current Filter)</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="toggleTotalsBtn" title="Show totals">Show</button>
+                </div>
                 <div class="card-body p-2">
                     <div class="table-responsive mb-0">
                         <table class="table table-bordered table-sm mb-0" id="payrollTotalsTable">
@@ -260,13 +283,34 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td id="totalSalary">₱0.00</td>
-                                    <td id="totalIncentives">₱0.00</td>
-                                    <td id="totalSSS">₱0.00</td>
-                                    <td id="totalPhilHealth">₱0.00</td>
-                                    <td id="totalPagibig">₱0.00</td>
-                                    <td id="totalIncomeTax">₱0.00</td>
-                                    <td id="totalNetSalary">₱0.00</td>
+                                    <td class="totals-amount-cell">
+                                        <span id="totalSalary" class="totals-amount-value d-none">₱0.00</span>
+                                        <span class="totals-amount-hidden">────────</span>
+                                    </td>
+                                    <td class="totals-amount-cell">
+                                        <span id="totalIncentives" class="totals-amount-value d-none">₱0.00</span>
+                                        <span class="totals-amount-hidden">────────</span>
+                                    </td>
+                                    <td class="totals-amount-cell">
+                                        <span id="totalSSS" class="totals-amount-value d-none">₱0.00</span>
+                                        <span class="totals-amount-hidden">────────</span>
+                                    </td>
+                                    <td class="totals-amount-cell">
+                                        <span id="totalPhilHealth" class="totals-amount-value d-none">₱0.00</span>
+                                        <span class="totals-amount-hidden">────────</span>
+                                    </td>
+                                    <td class="totals-amount-cell">
+                                        <span id="totalPagibig" class="totals-amount-value d-none">₱0.00</span>
+                                        <span class="totals-amount-hidden">────────</span>
+                                    </td>
+                                    <td class="totals-amount-cell">
+                                        <span id="totalIncomeTax" class="totals-amount-value d-none">₱0.00</span>
+                                        <span class="totals-amount-hidden">────────</span>
+                                    </td>
+                                    <td class="totals-amount-cell">
+                                        <span id="totalNetSalary" class="totals-amount-value d-none">₱0.00</span>
+                                        <span class="totals-amount-hidden">────────</span>
+                                    </td>
                                     <td id="totalEmployees">0</td>
                                 </tr>
                             </tbody>
@@ -752,21 +796,140 @@ function updatePayrollTable(payrolls) {
             <td>${payroll.employee_name}</td>
             <td>${payroll.department}</td>
             <td>${payroll.position}</td>
-            <td>₱${parseFloat(payroll.salary).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-            <td>₱${parseFloat(payroll.incentives || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-            <td class="text-primary">₱${parseFloat(payroll.sss).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-            <td class="text-info">₱${parseFloat(payroll.philhealth).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-            <td class="text-success">₱${parseFloat(payroll.pagibig).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-            <td class="text-warning">₱${parseFloat(payroll.income_tax).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-            <td class="text-success fw-bold">₱${parseFloat(payroll.net_pay).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            <td class="payroll-amount-cell text-nowrap">
+                <span class="amount-value d-none">₱${(parseFloat(payroll.salary) || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                <span class="amount-hidden">────────</span>
+            </td>
+            <td class="payroll-amount-cell text-nowrap">
+                <span class="amount-value d-none">₱${(parseFloat(payroll.incentives || 0) || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                <span class="amount-hidden">────────</span>
+            </td>
+            <td class="payroll-amount-cell text-primary text-nowrap">
+                <span class="amount-value d-none">₱${(parseFloat(payroll.sss) || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                <span class="amount-hidden">────────</span>
+            </td>
+            <td class="payroll-amount-cell text-info text-nowrap">
+                <span class="amount-value d-none">₱${(parseFloat(payroll.philhealth) || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                <span class="amount-hidden">────────</span>
+            </td>
+            <td class="payroll-amount-cell text-success text-nowrap">
+                <span class="amount-value d-none">₱${(parseFloat(payroll.pagibig) || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                <span class="amount-hidden">────────</span>
+            </td>
+            <td class="payroll-amount-cell text-warning text-nowrap">
+                <span class="amount-value d-none">₱${(parseFloat(payroll.income_tax) || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                <span class="amount-hidden">────────</span>
+            </td>
+            <td class="payroll-amount-cell text-success text-nowrap">
+                <span class="amount-value d-none">₱${(parseFloat(payroll.net_pay) || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                <span class="amount-hidden">────────</span>
+            </td>
             <td>${payroll.pay_date}</td>
             <td class="text-end">
-                <button type="button" class="btn btn-outline-primary btn-sm view-payroll-btn" title="View" data-bs-toggle="modal" data-bs-target="#payrollDetailModal" data-id="${payroll.id}">
-                    <i class="bi bi-eye"></i>
+                <button class="btn btn-sm btn-outline-secondary toggle-payroll-row-btn me-1" title="Show amounts">Show</button>
+                <button class="btn btn-sm btn-outline-primary view-payroll-btn" data-id="${payroll.id}" data-bs-toggle="modal" data-bs-target="#payrollDetailModal">
+                    <i class="bi bi-eye"></i> View
                 </button>
             </td>
         </tr>
     `).join('');
+
+    attachPayrollRowToggleHandlers();
+}
+
+// Helper: toggle visibility of totals row amounts (Totals - Current Filter)
+function attachTotalsToggleHandler() {
+    const toggleBtn = document.getElementById('toggleTotalsBtn');
+    if (!toggleBtn) return;
+
+    const syncTotalsHiddenState = function (hide) {
+        const cells = document.querySelectorAll('.totals-amount-cell');
+        cells.forEach(cell => {
+            const valueSpan = cell.querySelector('.totals-amount-value');
+            const hiddenSpan = cell.querySelector('.totals-amount-hidden');
+            if (!valueSpan || !hiddenSpan) return;
+
+            if (hide) {
+                valueSpan.classList.add('d-none');
+                hiddenSpan.classList.remove('d-none');
+            } else {
+                valueSpan.classList.remove('d-none');
+                hiddenSpan.classList.add('d-none');
+            }
+        });
+    };
+
+    // Start hidden by default
+    syncTotalsHiddenState(true);
+    toggleBtn.textContent = 'Show';
+    toggleBtn.title = 'Show totals';
+
+    toggleBtn.addEventListener('click', function () {
+        const anyValue = document.querySelector('.totals-amount-value');
+        const isHidden = anyValue ? anyValue.classList.contains('d-none') : true;
+
+        // If currently hidden, show; otherwise hide
+        syncTotalsHiddenState(!isHidden ? true : false);
+
+        if (isHidden) {
+            this.textContent = 'Hide';
+            this.title = 'Hide totals';
+        } else {
+            this.textContent = 'Show';
+            this.title = 'Show totals';
+        }
+    });
+}
+
+// Per-row Show/Hide for payroll monetary amounts in Payroll Records
+function attachPayrollRowToggleHandlers() {
+    const rows = document.querySelectorAll('#payrollTableBody tr');
+
+    rows.forEach(row => {
+        const toggleBtn = row.querySelector('.toggle-payroll-row-btn');
+        const cells = row.querySelectorAll('.payroll-amount-cell');
+        
+        // Set initial state: amounts hidden
+        cells.forEach(cell => {
+            const valueSpan = cell.querySelector('.amount-value');
+            const hiddenSpan = cell.querySelector('.amount-hidden');
+            if (valueSpan && hiddenSpan) {
+                valueSpan.classList.add('d-none');
+                hiddenSpan.classList.remove('d-none');
+            }
+        });
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function() {
+                const currentlyHidden = this.textContent.trim() === 'Show';
+                
+                cells.forEach(cell => {
+                    const valueSpan = cell.querySelector('.amount-value');
+                    const hiddenSpan = cell.querySelector('.amount-hidden');
+                    if (!valueSpan || !hiddenSpan) return;
+
+                    if (currentlyHidden) {
+                        // Show amounts
+                        valueSpan.classList.remove('d-none');
+                        hiddenSpan.classList.add('d-none');
+                    } else {
+                        // Hide amounts
+                        valueSpan.classList.add('d-none');
+                        hiddenSpan.classList.remove('d-none');
+                    }
+                });
+
+                // Update button text and title
+                if (currentlyHidden) {
+                    this.textContent = 'Hide';
+                    this.title = 'Hide amounts';
+                } else {
+                    this.textContent = 'Show';
+                    this.title = 'Show amounts';
+                }
+            });
+        }
+    });
 }
 
 // Filter and search functionality
@@ -800,6 +963,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Load payroll records
     loadPayrollRecords(1);
+
+    // Attach totals toggle handler once DOM is ready
+    attachTotalsToggleHandler();
 });
 
 // Handle payroll detail modal

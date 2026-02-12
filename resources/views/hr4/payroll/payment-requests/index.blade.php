@@ -6,6 +6,26 @@
 
 @section('content')
 <div class="container-fluid">
+    {{-- Security Verification Status --}}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-shield-check me-2 fs-5"></i>
+            <div class="flex-grow-1">
+                <strong>Security Verified</strong> - You have been granted access to Payment Request Management
+                @if(session('payment_request_verified_at'))
+                    <br><small class="text-muted">Verified at: {{ session('payment_request_verified_at')->format('g:i A, M j, Y') }}</small>
+                @endif
+            </div>
+            <form method="POST" action="{{ route('payroll.payment-requests.clear_verification') }}" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('This will require you to verify credentials again on next access. Continue?')">
+                    <i class="bi bi-shield-x me-1"></i>Clear Verification
+                </button>
+            </form>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
     <div class="row">
         <div class="col-12">
             <div class="card">

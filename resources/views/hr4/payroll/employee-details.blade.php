@@ -6,6 +6,26 @@
 
 @section('content')
 <div class="container-fluid">
+    {{-- Security Verification Status --}}
+    <div class="alert alert-primary alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-shield-check me-2 fs-5"></i>
+            <div class="flex-grow-1">
+                <strong>Security Verified</strong> - You have been granted access to Employee Details
+                @if(session('employee_details_verified_at'))
+                    <br><small class="text-muted">Verified at: {{ session('employee_details_verified_at')->format('g:i A, M j, Y') }}</small>
+                @endif
+            </div>
+            <form method="POST" action="{{ route('payroll.employee-details.clear_verification') }}" class="d-inline">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('This will require you to verify credentials again on next access. Continue?')">
+                    <i class="bi bi-shield-x me-1"></i>Clear Verification
+                </button>
+            </form>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -61,13 +81,17 @@
                                     <td>{{ $employee['name'] }}</td>
                                     <td>{{ $employee['department'] }}</td>
                                     <td>{{ $employee['position'] }}</td>
-                                    <td>{{ $employee['salary'] }}</td>
+                                    <td class="salary-cell">
+                                        <span class="salary-value d-none">{{ $employee['salary'] }}</span>
+                                        <span class="salary-hidden">────────</span>
+                                    </td>
                                     <td>{{ $employee['benefits'] }}</td>
                                     <td>{{ $employee['atm_number'] }}</td>
                                     <td class="text-end">
                                         <button type="button" class="btn btn-outline-primary btn-sm me-1 view-employee" data-id="{{ $employee['id'] }}" title="View">
                                             <i class="bi bi-eye"></i>
                                         </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm toggle-salary-btn" title="Show salary">Show</button>
                                     </td>
                                 </tr>
                                 @empty
@@ -425,6 +449,52 @@ document.getElementById('exportExcel').addEventListener('click', function() {
     document.body.removeChild(link);
     
     showNotification('Employee details exported successfully!', 'success');
+});
+
+// Per-row salary Show/Hide toggle (hidden by default)
+document.addEventListener('DOMContentLoaded', function () {
+    const salaryCells = document.querySelectorAll('.salary-cell');
+
+    // Ensure salaries start hidden (line only)
+    salaryCells.forEach(function (cell) {
+        const valueSpan = cell.querySelector('.salary-value');
+        const hiddenSpan = cell.querySelector('.salary-hidden');
+        if (valueSpan && hiddenSpan) {
+            valueSpan.classList.add('d-none');
+            hiddenSpan.classList.remove('d-none');
+        }
+    });
+
+    // Attach click handler to each toggle button
+    document.querySelectorAll('.toggle-salary-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const row = this.closest('tr');
+            if (!row) return;
+
+            const cell = row.querySelector('.salary-cell');
+            if (!cell) return;
+
+            const valueSpan = cell.querySelector('.salary-value');
+            const hiddenSpan = cell.querySelector('.salary-hidden');
+            if (!valueSpan || !hiddenSpan) return;
+
+            const isHidden = valueSpan.classList.contains('d-none');
+
+            if (isHidden) {
+                // Show salary
+                valueSpan.classList.remove('d-none');
+                hiddenSpan.classList.add('d-none');
+                this.textContent = 'Hide';
+                this.title = 'Hide salary';
+            } else {
+                // Hide salary
+                valueSpan.classList.add('d-none');
+                hiddenSpan.classList.remove('d-none');
+                this.textContent = 'Show';
+                this.title = 'Show salary';
+            }
+        });
+    });
 });
 
 // Show notification function

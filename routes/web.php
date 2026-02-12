@@ -72,8 +72,57 @@ Route::get('/employees/{id}', [EmployeesController::class, 'show'])->name('emplo
     Route::get('/compensation/potential', [CompensationController::class, 'potential'])->name('compensation.potential');
 
     // Salary Adjustment
-    Route::get('/salary-adjustment', [SalaryAdjustmentController::class, 'index'])->name('salary.adjustment.index');
-    Route::put('/salary-adjustment/{id}', [SalaryAdjustmentController::class, 'update'])->name('salary.adjustment.update');
+    Route::get('/salary-adjustment', [SalaryAdjustmentController::class, 'index'])->name('salary.adjustment.index')->middleware('salary.security');
+    Route::put('/salary-adjustment/{id}', [SalaryAdjustmentController::class, 'update'])->name('salary.adjustment.update')->middleware('salary.security');
+    Route::post('/salary-adjustment/verify', function (Request $request) {
+        // Handle verification form submission
+        $request->validate([
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $email = trim($request->input('email'));
+        $password = trim($request->input('password'));
+
+        // Verify credentials against the API
+        $response = Http::withoutVerifying()->get('https://hr4.jetlougetravels-ph.com/api/accounts');
+
+        if (!$response->successful()) {
+            return back()->withErrors(['verification' => 'Unable to contact accounts service. Please try again later.']);
+        }
+
+        $payload = $response->json();
+        $systemAccounts = data_get($payload, 'system_accounts');
+        if (!is_array($systemAccounts)) {
+            $systemAccounts = data_get($payload, 'data.system_accounts', []);
+        }
+
+        $matched = collect($systemAccounts)->first(function ($account) use ($email, $password) {
+            $employee = $account['employee'] ?? null;
+            $apiEmail = isset($employee['email']) ? trim($employee['email']) : '';
+            $apiPassword = isset($account['password']) ? trim($account['password']) : '';
+
+            return ($account['account_type'] ?? null) === 'system'
+                && !($account['blocked'] ?? false)
+                && $employee
+                && strcasecmp($apiEmail, $email) === 0
+                && $apiPassword === $password;
+        });
+
+        if ($matched) {
+            // Mark as verified for this session
+            $request->session()->put('salary_adjustment_verified', true);
+            $request->session()->put('salary_adjustment_verified_at', now());
+            
+            return redirect()->route('salary.adjustment.index');
+        }
+
+        return back()->withErrors(['verification' => 'The provided credentials do not match our records.']);
+    })->name('salary.adjustment.verify');
+    Route::post('/salary-adjustment/clear-verification', function (Request $request) {
+        $request->session()->forget(['salary_adjustment_verified', 'salary_adjustment_verified_at']);
+        return back()->with('status', 'Security verification cleared. You will need to verify again on next access.');
+    })->name('salary.adjustment.clear_verification');
 
     // Benefits (HMO/Benefits)
     Route::get('/benefits/plans', [BenefitPlansController::class, 'index'])->name('benefits.plans');
@@ -84,12 +133,61 @@ Route::get('/employees/{id}', [EmployeesController::class, 'show'])->name('emplo
     Route::post('/benefits/rewards', [RewardsController::class, 'store'])->name('benefits.rewards.store');
 
     // Accounts
-    Route::get('/accounts', [AccountsController::class, 'index'])->name('accounts.index');
-    Route::post('/accounts', [AccountsController::class, 'store'])->name('accounts.store');
-    Route::post('/accounts/from-employee', [AccountsController::class, 'fromEmployee'])->name('accounts.from_employee');
-    Route::post('/accounts/update', [AccountsController::class, 'update'])->name('accounts.update');
-    Route::post('/accounts/block', [AccountsController::class, 'block'])->name('accounts.block');
-    Route::post('/accounts/delete', [AccountsController::class, 'delete'])->name('accounts.delete');
+    Route::get('/accounts', [AccountsController::class, 'index'])->name('accounts.index')->middleware('accounts.security');
+    Route::post('/accounts', [AccountsController::class, 'store'])->name('accounts.store')->middleware('accounts.security');
+    Route::post('/accounts/from-employee', [AccountsController::class, 'fromEmployee'])->name('accounts.from_employee')->middleware('accounts.security');
+    Route::post('/accounts/update', [AccountsController::class, 'update'])->name('accounts.update')->middleware('accounts.security');
+    Route::post('/accounts/block', [AccountsController::class, 'block'])->name('accounts.block')->middleware('accounts.security');
+    Route::post('/accounts/delete', [AccountsController::class, 'delete'])->name('accounts.delete')->middleware('accounts.security');
+    Route::post('/accounts/verify', function (Request $request) {
+        // Handle verification form submission
+        $request->validate([
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $email = trim($request->input('email'));
+        $password = trim($request->input('password'));
+
+        // Verify credentials against the API
+        $response = Http::withoutVerifying()->get('https://hr4.jetlougetravels-ph.com/api/accounts');
+
+        if (!$response->successful()) {
+            return back()->withErrors(['verification' => 'Unable to contact accounts service. Please try again later.']);
+        }
+
+        $payload = $response->json();
+        $systemAccounts = data_get($payload, 'system_accounts');
+        if (!is_array($systemAccounts)) {
+            $systemAccounts = data_get($payload, 'data.system_accounts', []);
+        }
+
+        $matched = collect($systemAccounts)->first(function ($account) use ($email, $password) {
+            $employee = $account['employee'] ?? null;
+            $apiEmail = isset($employee['email']) ? trim($employee['email']) : '';
+            $apiPassword = isset($account['password']) ? trim($account['password']) : '';
+
+            return ($account['account_type'] ?? null) === 'system'
+                && !($account['blocked'] ?? false)
+                && $employee
+                && strcasecmp($apiEmail, $email) === 0
+                && $apiPassword === $password;
+        });
+
+        if ($matched) {
+            // Mark as verified for this session
+            $request->session()->put('accounts_verified', true);
+            $request->session()->put('accounts_verified_at', now());
+            
+            return redirect()->route('accounts.index');
+        }
+
+        return back()->withErrors(['verification' => 'The provided credentials do not match our records.']);
+    })->name('accounts.verify');
+    Route::post('/accounts/clear-verification', function (Request $request) {
+        $request->session()->forget(['accounts_verified', 'accounts_verified_at']);
+        return back()->with('status', 'Security verification cleared. You will need to verify again on next access.');
+    })->name('accounts.clear_verification');
 
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
@@ -104,43 +202,298 @@ Route::get('/employees/{id}', [EmployeesController::class, 'show'])->name('emplo
     Route::get('/vehicle-reservation', [VehicleReservationController::class, 'index'])->name('vehicle.reservation');
 
     // Payroll
-    Route::get('/payroll/employee-details', [EmployeeDetailsController::class, 'index'])->name('payroll.employee-details');
-    Route::get('/payroll/employee-details/{id}', [EmployeeDetailsController::class, 'show'])->name('payroll.employee-details.show');
-    Route::get('/payroll/employee-details/export', [EmployeeDetailsController::class, 'exportExcel'])->name('payroll.employee-details.export');
+    Route::get('/payroll/employee-details', [EmployeeDetailsController::class, 'index'])->name('payroll.employee-details')->middleware('employee.details.security');
+    Route::get('/payroll/employee-details/{id}', [EmployeeDetailsController::class, 'show'])->name('payroll.employee-details.show')->middleware('employee.details.security');
+    Route::get('/payroll/employee-details/export', [EmployeeDetailsController::class, 'exportExcel'])->name('payroll.employee-details.export')->middleware('employee.details.security');
+    
+    // Employee Details verification routes
+    Route::post('/payroll/employee-details/verify', function (Request $request) {
+        // Handle verification form submission
+        $request->validate([
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $email = trim($request->input('email'));
+        $password = trim($request->input('password'));
+
+        // Verify credentials against the API
+        $response = Http::withoutVerifying()->get('https://hr4.jetlougetravels-ph.com/api/accounts');
+
+        if (!$response->successful()) {
+            return back()->withErrors(['verification' => 'Unable to contact accounts service. Please try again later.']);
+        }
+
+        $payload = $response->json();
+        $systemAccounts = data_get($payload, 'system_accounts');
+        if (!is_array($systemAccounts)) {
+            $systemAccounts = data_get($payload, 'data.system_accounts', []);
+        }
+
+        $matched = collect($systemAccounts)->first(function ($account) use ($email, $password) {
+            $employee = $account['employee'] ?? null;
+            $apiEmail = isset($employee['email']) ? trim($employee['email']) : '';
+            $apiPassword = isset($account['password']) ? trim($account['password']) : '';
+
+            return ($account['account_type'] ?? null) === 'system'
+                && !($account['blocked'] ?? false)
+                && $employee
+                && strcasecmp($apiEmail, $email) === 0
+                && $apiPassword === $password;
+        });
+
+        if ($matched) {
+            // Mark as verified for this session
+            $request->session()->put('employee_details_verified', true);
+            $request->session()->put('employee_details_verified_at', now());
+            
+            return redirect()->route('payroll.employee-details');
+        }
+
+        return back()->withErrors(['verification' => 'The provided credentials do not match our records.']);
+    })->name('payroll.employee-details.verify');
+    Route::post('/payroll/employee-details/clear-verification', function (Request $request) {
+        $request->session()->forget(['employee_details_verified', 'employee_details_verified_at']);
+        return back()->with('status', 'Security verification cleared. You will need to verify again on next access.');
+    })->name('payroll.employee-details.clear_verification');
 
     // Payment Requests
-    Route::get('/payroll/payment-requests', [PaymentRequestController::class, 'index'])->name('payroll.payment-requests.index');
-    Route::get('/payroll/payment-requests/create', [PaymentRequestController::class, 'create'])->name('payroll.payment-requests.create');
-    Route::post('/payroll/payment-requests', [PaymentRequestController::class, 'store'])->name('payroll.payment-requests.store');
-    Route::get('/payroll/payment-requests/{paymentRequest}', [PaymentRequestController::class, 'show'])->name('payroll.payment-requests.show');
+    Route::get('/payroll/payment-requests', [PaymentRequestController::class, 'index'])->name('payroll.payment-requests.index')->middleware('payment.request.security');
+    Route::get('/payroll/payment-requests/create', [PaymentRequestController::class, 'create'])->name('payroll.payment-requests.create')->middleware('payment.request.security');
+    Route::post('/payroll/payment-requests', [PaymentRequestController::class, 'store'])->name('payroll.payment-requests.store')->middleware('payment.request.security');
+    Route::get('/payroll/payment-requests/{paymentRequest}', [PaymentRequestController::class, 'show'])->name('payroll.payment-requests.show')->middleware('payment.request.security');
+    
+    // Payment Request verification routes
+    Route::post('/payroll/payment-requests/verify', function (Request $request) {
+        // Handle verification form submission
+        $request->validate([
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
+        ]);
 
-    Route::get('/payroll/salary-computation', [\App\Http\Controllers\Payroll\PayrollController::class, 'salaryComputation'])->name('payroll.salary-computation');
-    Route::post('/payroll/search-employees', [\App\Http\Controllers\Payroll\PayrollController::class, 'searchEmployees'])->name('payroll.search-employees');
-    Route::post('/payroll/calculate-payroll', [\App\Http\Controllers\Payroll\PayrollController::class, 'calculatePayroll'])->name('payroll.calculate-payroll');
-    Route::post('/payroll/save-payroll', [\App\Http\Controllers\Payroll\PayrollController::class, 'savePayroll'])->name('payroll.save-payroll');
-    Route::get('/payroll/get-payroll-records', [\App\Http\Controllers\Payroll\PayrollController::class, 'getPayrollRecords'])->name('payroll.get-payroll-records');
-    Route::get('/payroll/get-payroll-details/{id}', [\App\Http\Controllers\Payroll\PayrollController::class, 'getPayrollDetails'])->name('payroll.get-payroll-details');
+        $email = trim($request->input('email'));
+        $password = trim($request->input('password'));
+
+        // Verify credentials against the API
+        $response = Http::withoutVerifying()->get('https://hr4.jetlougetravels-ph.com/api/accounts');
+
+        if (!$response->successful()) {
+            return back()->withErrors(['verification' => 'Unable to contact accounts service. Please try again later.']);
+        }
+
+        $payload = $response->json();
+        $systemAccounts = data_get($payload, 'system_accounts');
+        if (!is_array($systemAccounts)) {
+            $systemAccounts = data_get($payload, 'data.system_accounts', []);
+        }
+
+        $matched = collect($systemAccounts)->first(function ($account) use ($email, $password) {
+            $employee = $account['employee'] ?? null;
+            $apiEmail = isset($employee['email']) ? trim($employee['email']) : '';
+            $apiPassword = isset($account['password']) ? trim($account['password']) : '';
+
+            return ($account['account_type'] ?? null) === 'system'
+                && !($account['blocked'] ?? false)
+                && $employee
+                && strcasecmp($apiEmail, $email) === 0
+                && $apiPassword === $password;
+        });
+
+        if ($matched) {
+            // Mark as verified for this session
+            $request->session()->put('payment_request_verified', true);
+            $request->session()->put('payment_request_verified_at', now());
+            
+            return redirect()->route('payroll.payment-requests.index');
+        }
+
+        return back()->withErrors(['verification' => 'The provided credentials do not match our records.']);
+    })->name('payroll.payment-requests.verify');
+    Route::post('/payroll/payment-requests/clear-verification', function (Request $request) {
+        $request->session()->forget(['payment_request_verified', 'payment_request_verified_at']);
+        return back()->with('status', 'Security verification cleared. You will need to verify again on next access.');
+    })->name('payroll.payment-requests.clear_verification');
+
+    Route::get('/payroll/salary-computation', [\App\Http\Controllers\Payroll\PayrollController::class, 'salaryComputation'])->name('payroll.salary-computation')->middleware('salary.computation.security');
+    Route::post('/payroll/search-employees', [\App\Http\Controllers\Payroll\PayrollController::class, 'searchEmployees'])->name('payroll.search-employees')->middleware('salary.computation.security');
+    Route::post('/payroll/calculate-payroll', [\App\Http\Controllers\Payroll\PayrollController::class, 'calculatePayroll'])->name('payroll.calculate-payroll')->middleware('salary.computation.security');
+    Route::post('/payroll/save-payroll', [\App\Http\Controllers\Payroll\PayrollController::class, 'savePayroll'])->name('payroll.save-payroll')->middleware('salary.computation.security');
+    Route::get('/payroll/get-payroll-records', [\App\Http\Controllers\Payroll\PayrollController::class, 'getPayrollRecords'])->name('payroll.get-payroll-records')->middleware('salary.computation.security');
+    Route::get('/payroll/get-payroll-details/{id}', [\App\Http\Controllers\Payroll\PayrollController::class, 'getPayrollDetails'])->name('payroll.get-payroll-details')->middleware('salary.computation.security');
+    
+    // Salary Computation verification routes
+    Route::post('/payroll/salary-computation/verify', function (Request $request) {
+        // Handle verification form submission
+        $request->validate([
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $email = trim($request->input('email'));
+        $password = trim($request->input('password'));
+
+        // Verify credentials against the API
+        $response = Http::withoutVerifying()->get('https://hr4.jetlougetravels-ph.com/api/accounts');
+
+        if (!$response->successful()) {
+            return back()->withErrors(['verification' => 'Unable to contact accounts service. Please try again later.']);
+        }
+
+        $payload = $response->json();
+        $systemAccounts = data_get($payload, 'system_accounts');
+        if (!is_array($systemAccounts)) {
+            $systemAccounts = data_get($payload, 'data.system_accounts', []);
+        }
+
+        $matched = collect($systemAccounts)->first(function ($account) use ($email, $password) {
+            $employee = $account['employee'] ?? null;
+            $apiEmail = isset($employee['email']) ? trim($employee['email']) : '';
+            $apiPassword = isset($account['password']) ? trim($account['password']) : '';
+
+            return ($account['account_type'] ?? null) === 'system'
+                && !($account['blocked'] ?? false)
+                && $employee
+                && strcasecmp($apiEmail, $email) === 0
+                && $apiPassword === $password;
+        });
+
+        if ($matched) {
+            // Mark as verified for this session
+            $request->session()->put('salary_computation_verified', true);
+            $request->session()->put('salary_computation_verified_at', now());
+            
+            return redirect()->route('payroll.salary-computation');
+        }
+
+        return back()->withErrors(['verification' => 'The provided credentials do not match our records.']);
+    })->name('payroll.salary-computation.verify');
+    Route::post('/payroll/salary-computation/clear-verification', function (Request $request) {
+        $request->session()->forget(['salary_computation_verified', 'salary_computation_verified_at']);
+        return back()->with('status', 'Security verification cleared. You will need to verify again on next access.');
+    })->name('payroll.salary-computation.clear_verification');
     Route::get('/payroll/attendance-record', [\App\Http\Controllers\Payroll\PayrollController::class, 'attendanceRecord'])->name('payroll.attendance-record');
     Route::get('/payroll/payslips', [\App\Http\Controllers\Payroll\PayrollController::class, 'payslips'])->name('payroll.payslips');
     Route::get('/payroll/disbursements', [\App\Http\Controllers\Payroll\PayrollController::class, 'disbursements'])->name('payroll.disbursements');
     Route::get('/payroll/approval', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'index'])->name('payroll.approval');
 
     // Net Payout
-    Route::get('/net-payout', [NetPayoutController::class, 'index'])->name('net-payout.index');
-    Route::get('/net-payout/{netPayout}', [NetPayoutController::class, 'show'])->name('net-payout.show');
-    Route::post('/net-payout/store', [NetPayoutController::class, 'store'])->name('net-payout.store');
-    Route::get('/net-payout/stats', [NetPayoutController::class, 'getSidebarStats'])->name('net-payout.stats');
-    Route::get('/net-payout/data', [NetPayoutController::class, 'getPayouts'])->name('net-payout.data');
+    Route::get('/net-payout', [NetPayoutController::class, 'index'])->name('net-payout.index')->middleware('net.payout.security');
+    Route::get('/net-payout/{netPayout}', [NetPayoutController::class, 'show'])->name('net-payout.show')->middleware('net.payout.security');
+    Route::post('/net-payout/store', [NetPayoutController::class, 'store'])->name('net-payout.store')->middleware('net.payout.security');
+    Route::get('/net-payout/stats', [NetPayoutController::class, 'getSidebarStats'])->name('net-payout.stats')->middleware('net.payout.security');
+    Route::get('/net-payout/data', [NetPayoutController::class, 'getPayouts'])->name('net-payout.data')->middleware('net.payout.security');
+    
+    // Net Payout verification routes
+    Route::post('/net-payout/verify', function (Request $request) {
+        // Handle verification form submission
+        $request->validate([
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $email = trim($request->input('email'));
+        $password = trim($request->input('password'));
+
+        // Verify credentials against the API
+        $response = Http::withoutVerifying()->get('https://hr4.jetlougetravels-ph.com/api/accounts');
+
+        if (!$response->successful()) {
+            return back()->withErrors(['verification' => 'Unable to contact accounts service. Please try again later.']);
+        }
+
+        $payload = $response->json();
+        $systemAccounts = data_get($payload, 'system_accounts');
+        if (!is_array($systemAccounts)) {
+            $systemAccounts = data_get($payload, 'data.system_accounts', []);
+        }
+
+        $matched = collect($systemAccounts)->first(function ($account) use ($email, $password) {
+            $employee = $account['employee'] ?? null;
+            $apiEmail = isset($employee['email']) ? trim($employee['email']) : '';
+            $apiPassword = isset($account['password']) ? trim($account['password']) : '';
+
+            return ($account['account_type'] ?? null) === 'system'
+                && !($account['blocked'] ?? false)
+                && $employee
+                && strcasecmp($apiEmail, $email) === 0
+                && $apiPassword === $password;
+        });
+
+        if ($matched) {
+            // Mark as verified for this session
+            $request->session()->put('net_payout_verified', true);
+            $request->session()->put('net_payout_verified_at', now());
+            
+            return redirect()->route('net-payout.index');
+        }
+
+        return back()->withErrors(['verification' => 'The provided credentials do not match our records.']);
+    })->name('net-payout.verify');
+    Route::post('/net-payout/clear-verification', function (Request $request) {
+        $request->session()->forget(['net_payout_verified', 'net_payout_verified_at']);
+        return back()->with('status', 'Security verification cleared. You will need to verify again on next access.');
+    })->name('net-payout.clear_verification');
 
     // Budget Requests
     Route::prefix('payroll/budget-requests')->name('payroll.budget-requests.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'index'])->name('index');
-        Route::get('/create', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'create'])->name('create');
-        Route::post('/', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'store'])->name('store');
-        Route::get('/{budgetRequest}', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'show'])->name('show');
-        Route::patch('/{budgetRequest}/status', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'updateStatus'])->name('update-status');
-        Route::delete('/{budgetRequest}', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'destroy'])->name('destroy');
+        Route::get('/', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'index'])->name('index')->middleware('budget.request.security');
+        Route::get('/create', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'create'])->name('create')->middleware('budget.request.security');
+        Route::post('/', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'store'])->name('store')->middleware('budget.request.security');
+        Route::get('/{budgetRequest}', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'show'])->name('show')->middleware('budget.request.security');
+        Route::patch('/{budgetRequest}/status', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'updateStatus'])->name('update-status')->middleware('budget.request.security');
+        Route::delete('/{budgetRequest}', [\App\Http\Controllers\Payroll\BudgetRequestController::class, 'destroy'])->name('destroy')->middleware('budget.request.security');
     });
+    
+    // Budget Request verification routes
+    Route::post('/payroll/budget-requests/verify', function (Request $request) {
+        // Handle verification form submission
+        $request->validate([
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
+        $email = trim($request->input('email'));
+        $password = trim($request->input('password'));
+
+        // Verify credentials against the API
+        $response = Http::withoutVerifying()->get('https://hr4.jetlougetravels-ph.com/api/accounts');
+
+        if (!$response->successful()) {
+            return back()->withErrors(['verification' => 'Unable to contact accounts service. Please try again later.']);
+        }
+
+        $payload = $response->json();
+        $systemAccounts = data_get($payload, 'system_accounts');
+        if (!is_array($systemAccounts)) {
+            $systemAccounts = data_get($payload, 'data.system_accounts', []);
+        }
+
+        $matched = collect($systemAccounts)->first(function ($account) use ($email, $password) {
+            $employee = $account['employee'] ?? null;
+            $apiEmail = isset($employee['email']) ? trim($employee['email']) : '';
+            $apiPassword = isset($account['password']) ? trim($account['password']) : '';
+
+            return ($account['account_type'] ?? null) === 'system'
+                && !($account['blocked'] ?? false)
+                && $employee
+                && strcasecmp($apiEmail, $email) === 0
+                && $apiPassword === $password;
+        });
+
+        if ($matched) {
+            // Mark as verified for this session
+            $request->session()->put('budget_request_verified', true);
+            $request->session()->put('budget_request_verified_at', now());
+            
+            return redirect()->route('payroll.budget-requests.index');
+        }
+
+        return back()->withErrors(['verification' => 'The provided credentials do not match our records.']);
+    })->name('payroll.budget-requests.verify');
+    Route::post('/payroll/budget-requests/clear-verification', function (Request $request) {
+        $request->session()->forget(['budget_request_verified', 'budget_request_verified_at']);
+        return back()->with('status', 'Security verification cleared. You will need to verify again on next access.');
+    })->name('payroll.budget-requests.clear_verification');
 });
 
 

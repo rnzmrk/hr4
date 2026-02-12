@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\Payroll;
+use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Carbon\Carbon;
@@ -32,10 +33,14 @@ class DashboardController extends Controller
         // Get new hire employees count (all new hires, not just this month)
         $newHireEmployees = Employee::where('employee_status', NEW_HIRE)->count();
         
+        // Get total departments count
+        $totalDepartments = Department::count();
+        
         return view('hr4.dashboard', compact(
             'totalEmployees',
             'regularEmployees',
             'newHireEmployees',
+            'totalDepartments',
             'allEmployee',
             'newHire',
             'regular',

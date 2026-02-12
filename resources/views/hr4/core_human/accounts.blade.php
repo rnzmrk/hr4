@@ -7,6 +7,26 @@
 @section('content')
 <div class="container-xxl">
 
+  {{-- Security Verification Status --}}
+  <div class="alert alert-info alert-dismissible fade show" role="alert">
+    <div class="d-flex align-items-center">
+      <i class="bi bi-shield-check me-2 fs-5"></i>
+      <div class="flex-grow-1">
+        <strong>Security Verified</strong> - You have been granted access to Accounts Management
+        @if(session('accounts_verified_at'))
+          <br><small class="text-muted">Verified at: {{ session('accounts_verified_at')->format('g:i A, M j, Y') }}</small>
+        @endif
+      </div>
+      <form method="POST" action="{{ route('accounts.clear_verification') }}" class="d-inline">
+        @csrf
+        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('This will require you to verify credentials again on next access. Continue?')">
+          <i class="bi bi-shield-x me-1"></i>Clear Verification
+        </button>
+      </form>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+
   {{-- Top bar --}}
   <div class="d-flex justify-content-between align-items-center mb-3">
     <div class="d-flex gap-2">

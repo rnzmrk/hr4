@@ -9,45 +9,103 @@
 <section>
     <div @class('container-fluid')>
         <div class="container-xxl">
+            <style>
+                .clickable-card {
+                    transition: all 0.3s ease;
+                    cursor: pointer;
+                }
+                .clickable-card:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+                }
+                .clickable-card:hover .card-body {
+                    color: #212529;
+                }
+                
+                /* Employee card colors */
+                .employee-card-primary {
+                    border-left: 4px solid #007bff;
+                    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+                }
+                .employee-card-primary:hover {
+                    background: linear-gradient(135deg, #f8f9ff 0%, #e6f3ff 100%);
+                    border-left-color: #0056b3;
+                }
+                
+                .employee-card-success {
+                    border-left: 4px solid #28a745;
+                    background: linear-gradient(135deg, #ffffff 0%, #f8fff9 100%);
+                }
+                .employee-card-success:hover {
+                    background: linear-gradient(135deg, #f8fff9 0%, #e6ffe6 100%);
+                    border-left-color: #1e7e34;
+                }
+                
+                .employee-card-info {
+                    border-left: 4px solid #17a2b8;
+                    background: linear-gradient(135deg, #ffffff 0%, #f8ffff 100%);
+                }
+                .employee-card-info:hover {
+                    background: linear-gradient(135deg, #f8ffff 0%, #e6f7f7 100%);
+                    border-left-color: #117a8b;
+                }
+                
+                .employee-card-warning {
+                    border-left: 4px solid #ffc107;
+                    background: linear-gradient(135deg, #ffffff 0%, #fffdf7 100%);
+                }
+                .employee-card-warning:hover {
+                    background: linear-gradient(135deg, #fffdf7 0%, #fff9e6 100%);
+                    border-left-color: #e0a800;
+                }
+            </style>
             <div class="row g-3">
                 <!-- Total Employees -->
                 <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="text-muted small">Total Employees</div>
-                            <div class="fs-4 fw-bold mt-1">{{ $totalEmployees }}</div>
+                    <a href="{{ route('employees.index') }}" class="text-decoration-none">
+                        <div class="card shadow-sm h-100 clickable-card employee-card-primary">
+                            <div class="card-body">
+                                <div class="text-muted small">Total Employees</div>
+                                <div class="fs-4 fw-bold mt-1">{{ $totalEmployees }}</div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
 
                 <!-- Regular Employees -->
                 <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="text-muted small">Regular Employees</div>
-                            <div class="fs-4 fw-bold mt-1">{{ $regularEmployees }}</div>
+                    <a href="{{ route('employees.index') }}?status=regular" class="text-decoration-none">
+                        <div class="card shadow-sm h-100 clickable-card employee-card-success">
+                            <div class="card-body">
+                                <div class="text-muted small">Regular Employees</div>
+                                <div class="fs-4 fw-bold mt-1">{{ $regularEmployees }}</div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
 
                 <!-- New Hires -->
                 <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="text-muted small">New Hires</div>
-                            <div class="fs-4 fw-bold mt-1">{{ $newHireEmployees }}</div>
+                    <a href="{{ route('employees.index') }}?status=new_hire" class="text-decoration-none">
+                        <div class="card shadow-sm h-100 clickable-card employee-card-info">
+                            <div class="card-body">
+                                <div class="text-muted small">New Hires</div>
+                                <div class="fs-4 fw-bold mt-1">{{ $newHireEmployees }}</div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
 
-                <!-- Retired Employees -->
+                <!-- Departments -->
                 <div class="col-12 col-sm-6 col-lg-4 col-xl-2">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="text-muted small">Retired Employees</div>
-                            <div class="fs-4 fw-bold mt-1">{{ $retired }}</div>
+                    <a href="{{ route('departments.index') }}" class="text-decoration-none">
+                        <div class="card shadow-sm h-100 clickable-card employee-card-warning">
+                            <div class="card-body">
+                                <div class="text-muted small">Departments</div>
+                                <div class="fs-4 fw-bold mt-1">{{ $totalDepartments }}</div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
 
             </div>
