@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('page-title', 'Benefit Plans')
-@section('page-subtitle', 'HMO/Benefits configuration')
+@section('page-subtitle', '')
 @section('breadcrumbs', 'Benefits / Plans')
 
 @php

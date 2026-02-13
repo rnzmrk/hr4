@@ -1,112 +1,85 @@
 @extends('layouts.app')
 
 @section('page-title', 'Leave Records')
-@section('page-subtitle', 'Approved/pending leaves considered in payroll')
+@section('page-subtitle', 'leaves records')
 @section('breadcrumbs', 'Compensation / Leaves')
 
 @section('content')
 <div class="container-xxl">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <div></div>
+    <h4 class="mb-0">Leave Management</h4>
   </div>
-  {{-- Edit Leave Modal --}}
+  {{-- View Leave Details Modal --}}
   <div class="modal fade" id="editLeaveModal" tabindex="-1" aria-labelledby="editLeaveModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="editLeaveModalLabel">Edit Leave</h5>
+          <h5 class="modal-title" id="editLeaveModalLabel">Leave Details</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form method="POST" action="{{ route('compensation.leaves.update') }}">
-          @csrf
-          <input type="hidden" name="id" id="edit_id">
-          <div class="modal-body">
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label class="form-label small text-muted">Employee</label>
-                <select name="employee_id" id="edit_employee_id" class="form-select" required>
-                  <option value="1">John Doe</option>
-                  <option value="2">Jane Smith</option>
-                  <option value="3">Mike Johnson</option>
-                  <option value="4">Sarah Williams</option>
-                  <option value="5">Robert Brown</option>
-                  <option value="6">Emily Davis</option>
-                  <option value="7">David Wilson</option>
-                  <option value="8">Lisa Anderson</option>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label small text-muted">Type</label>
-                <input type="text" name="leave_type" id="edit_leave_type" class="form-control" required>
-              </div>
-              <div class="col-md-3 d-flex align-items-end">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" value="1" id="edit_is_paid" name="is_paid">
-                  <label class="form-check-label" for="edit_is_paid">Paid leave</label>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label small text-muted">Start Date</label>
-                <input type="date" name="start_date" id="edit_start_date" class="form-control" required>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label small text-muted">End Date</label>
-                <input type="date" name="end_date" id="edit_end_date" class="form-control" required>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label small text-muted">Hours (optional)</label>
-                <input type="number" step="0.01" name="hours" id="edit_hours" class="form-control" placeholder="8.00">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label small text-muted">Status</label>
-                <select name="status" id="edit_status" class="form-select" required>
-                  <option value="approved">Approved</option>
-                  <option value="pending">Pending</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-              </div>
-              <div class="col-12">
-                <label class="form-label small text-muted">Notes</label>
-                <input type="text" name="notes" id="edit_notes" class="form-control" placeholder="Optional notes">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small text-muted">Employee</label>
+              <input type="text" id="view_employee_name" class="form-control" readonly>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small text-muted">Type</label>
+              <input type="text" id="view_leave_type" class="form-control" readonly>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="view_is_paid" disabled>
+                <label class="form-check-label" for="view_is_paid">Paid leave</label>
               </div>
             </div>
+            <div class="col-md-3">
+              <label class="form-label small text-muted">Start Date</label>
+              <input type="date" id="view_start_date" class="form-control" readonly>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small text-muted">End Date</label>
+              <input type="date" id="view_end_date" class="form-control" readonly>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small text-muted">Hours</label>
+              <input type="text" id="view_hours" class="form-control" readonly>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label small text-muted">Status</label>
+              <input type="text" id="view_status" class="form-control" readonly>
+            </div>
+            <div class="col-12">
+              <label class="form-label small text-muted">Notes</label>
+              <input type="text" id="view_notes" class="form-control" readonly>
+            </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-          </div>
-        </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function(){
-      const editModal = document.getElementById('editLeaveModal');
-      editModal?.addEventListener('show.bs.modal', function(e){
+      const viewModal = document.getElementById('editLeaveModal');
+      viewModal?.addEventListener('show.bs.modal', function(e){
         const b = e.relatedTarget;
         if (!b) return;
-        // Set ID
-        editModal.querySelector('#edit_id').value = b.getAttribute('data-id') || '';
-        // Map employee by name to ID in the select, fallback to first option
-        const empName = b.getAttribute('data-employee_name') || '';
-        const sel = editModal.querySelector('#edit_employee_id');
-        if (sel) {
-          let matched = false;
-          [...sel.options].forEach(o => {
-            if (o.text === empName) { o.selected = true; matched = true; }
-          });
-          if (!matched && sel.options.length) sel.selectedIndex = 0;
-        }
-        // Other fields
-        editModal.querySelector('#edit_leave_type').value = b.getAttribute('data-leave_type') || '';
+        
+        // Populate view-only fields
+        document.getElementById('view_employee_name').value = b.getAttribute('data-employee_name') || '';
+        document.getElementById('view_leave_type').value = b.getAttribute('data-leave_type') || '';
+        document.getElementById('view_start_date').value = b.getAttribute('data-start_date') || '';
+        document.getElementById('view_end_date').value = b.getAttribute('data-end_date') || '';
+        document.getElementById('view_hours').value = b.getAttribute('data-hours') || '';
+        document.getElementById('view_status').value = b.getAttribute('data-status') || '';
+        document.getElementById('view_notes').value = b.getAttribute('data-notes') || '';
+        
         const isPaid = (b.getAttribute('data-is_paid') || '0') === '1';
-        editModal.querySelector('#edit_is_paid').checked = isPaid;
-        editModal.querySelector('#edit_start_date').value = b.getAttribute('data-start_date') || '';
-        editModal.querySelector('#edit_end_date').value = b.getAttribute('data-end_date') || '';
-        editModal.querySelector('#edit_hours').value = b.getAttribute('data-hours') || '';
-        editModal.querySelector('#edit_status').value = (b.getAttribute('data-status') || 'approved');
-        editModal.querySelector('#edit_notes').value = b.getAttribute('data-notes') || '';
+        document.getElementById('view_is_paid').checked = isPaid;
       });
     });
   </script>
@@ -153,31 +126,28 @@
               <td>{{ ucfirst($l['status']) }}</td>
               <td>{{ $l['notes'] ?? '—' }}</td>
               <td class="text-end">
-                <div class="btn-group">
-                  <button class="btn btn-light btn-sm" title="Edit"
-                    data-bs-toggle="modal" data-bs-target="#editLeaveModal"
-                    data-id="{{ $l['id'] }}"
-                    data-employee_name="{{ $l['employee'] }}"
-                    data-leave_type="{{ $l['leave_type'] }}"
-                    data-is_paid="{{ ($l['is_paid'] ?? false) ? 1 : 0 }}"
-                    data-start_date="{{ $l['start_date'] }}"
-                    data-end_date="{{ $l['end_date'] }}"
-                    data-hours="{{ $l['hours'] ?? '' }}"
-                    data-status="{{ $l['status'] }}"
-                    data-notes="{{ $l['notes'] ?? '' }}">
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                  <form method="POST" action="{{ route('compensation.leaves.delete') }}" onsubmit="return confirm('Delete this leave record?');">
-                    @csrf
-                    <input type="hidden" name="id" value="{{ $l['id'] }}">
-                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete"><i class="bi bi-trash"></i></button>
-                  </form>
-                </div>
+                <button class="btn btn-light btn-sm" title="View Details"
+                  data-bs-toggle="modal" data-bs-target="#editLeaveModal"
+                  data-id="{{ $l['id'] }}"
+                  data-employee_name="{{ $l['employee'] }}"
+                  data-leave_type="{{ $l['leave_type'] }}"
+                  data-is_paid="{{ ($l['is_paid'] ?? false) ? 1 : 0 }}"
+                  data-start_date="{{ $l['start_date'] }}"
+                  data-end_date="{{ $l['end_date'] }}"
+                  data-hours="{{ $l['hours'] ?? '' }}"
+                  data-status="{{ $l['status'] }}"
+                  data-notes="{{ $l['notes'] ?? '' }}">
+                  <i class="bi bi-eye"></i> View
+                </button>
               </td>
             </tr>
             @empty
             <tr>
-              <td colspan="9" class="text-center text-muted">No records from leave</td>
+              <td colspan="9" class="text-center text-muted py-4">
+                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                <div>No leave records found</div>
+                <small class="text-muted">Leave records will appear here when available</small>
+              </td>
             </tr>
             @endforelse
           </tbody>
@@ -185,75 +155,4 @@
       </div>
     </div>
   </div>
-
-  {{-- Record Leave Modal --}}
-  <div class="modal fade" id="createLeaveModal" tabindex="-1" aria-labelledby="createLeaveModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="createLeaveModalLabel">Record Leave</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <form method="POST" action="{{ route('compensation.leaves.store') }}">
-          @csrf
-          <div class="modal-body">
-            <div class="row g-3">
-              <div class="col-md-6">
-                <label class="form-label small text-muted">Employee</label>
-                <select name="employee_id" class="form-select" required>
-                  <option value="1">John Doe</option>
-                  <option value="2">Jane Smith</option>
-                  <option value="3">Mike Johnson</option>
-                  <option value="4">Sarah Williams</option>
-                  <option value="5">Robert Brown</option>
-                  <option value="6">Emily Davis</option>
-                  <option value="7">David Wilson</option>
-                  <option value="8">Lisa Anderson</option>
-                </select>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label small text-muted">Type</label>
-                <input type="text" name="leave_type" class="form-control"  required>
-              </div>
-              <div class="col-md-3 d-flex align-items-end">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" value="1" id="is_paid" name="is_paid">
-                  <label class="form-check-label" for="is_paid">Paid leave</label>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label small text-muted">Start Date</label>
-                <input type="date" name="start_date" class="form-control" value="{{ date('Y-m-d') }}" required>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label small text-muted">End Date</label>
-                <input type="date" name="end_date" class="form-control" value="{{ date('Y-m-d') }}" required>
-              </div>
-              <div class="col-md-3">
-                <label class="form-label small text-muted">Hours (optional)</label>
-                <input type="number" step="0.01" name="hours" class="form-control" placeholder="8.00">
-              </div>
-              <div class="col-md-3">
-                <label class="form-label small text-muted">Status</label>
-                <select name="status" class="form-select" required>
-                  <option value="approved" selected>Approved</option>
-                  <option value="pending">Pending</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-              </div>
-              <div class="col-12">
-                <label class="form-label small text-muted">Notes</label>
-                <input type="text" name="notes" class="form-control" placeholder="Optional notes">
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary">Save</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
 @endsection
