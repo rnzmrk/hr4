@@ -434,23 +434,26 @@ document.getElementById('printEmployee').addEventListener('click', function() {
 // Search is handled server-side via GET form submission.
 
 // Export to CSV functionality
-document.getElementById('exportCsv').addEventListener('click', function() {
-    const searchTerm = document.getElementById('searchInput') ? document.getElementById('searchInput').value : '';
-    
-    // Redirect to CSV export endpoint with search parameter
-    const url = `/payroll/employee-details/export/csv${searchTerm ? '?search=' + encodeURIComponent(searchTerm) : ''}`;
-    
-    // Create a hidden link and trigger download
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'employee-details.csv'; // Force download
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    showNotification('Employee details exported to CSV successfully!', 'success');
-});
+const exportCsvBtn = document.getElementById('exportCsv');
+if (exportCsvBtn) {
+    exportCsvBtn.addEventListener('click', function() {
+        const searchTerm = document.getElementById('searchInput') ? document.getElementById('searchInput').value : '';
+        
+        // Redirect to CSV export endpoint with search parameter
+        const url = `/payroll/employee-details/export/csv${searchTerm ? '?search=' + encodeURIComponent(searchTerm) : ''}`;
+        
+        // Create a hidden link and trigger download
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'employee-details.csv'; // Force download
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showNotification('Employee details exported to CSV successfully!', 'success');
+    });
+}
 
 // Per-row sensitive info Show/Hide toggle (salary + ATM, hidden by default)
 document.addEventListener('DOMContentLoaded', function () {
