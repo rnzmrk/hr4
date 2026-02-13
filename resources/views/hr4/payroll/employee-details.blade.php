@@ -34,9 +34,6 @@
                         <i class="bi bi-person-badge me-2"></i>Employee Details
                     </h5>
                     <div>
-                        <button class="btn btn-light btn-sm me-2" id="exportExcel">
-                            <i class="bi bi-file-earmark-excel me-1"></i>Export to Excel
-                        </button>
                         <button class="btn btn-light btn-sm" id="refreshTable">
                             <i class="bi bi-arrow-clockwise me-1"></i>Refresh
                         </button>
@@ -86,12 +83,15 @@
                                         <span class="salary-hidden">────────</span>
                                     </td>
                                     <td>{{ $employee['benefits'] }}</td>
-                                    <td>{{ $employee['atm_number'] }}</td>
+                                    <td class="atm-cell">
+                                        <span class="atm-value d-none">{{ $employee['atm_number'] }}</span>
+                                        <span class="atm-hidden">────────</span>
+                                    </td>
                                     <td class="text-end">
                                         <button type="button" class="btn btn-outline-primary btn-sm me-1 view-employee" data-id="{{ $employee['id'] }}" title="View">
                                             <i class="bi bi-eye"></i>
                                         </button>
-                                        <button type="button" class="btn btn-outline-secondary btn-sm toggle-salary-btn" title="Show salary">Show</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm toggle-sensitive-btn" title="Show sensitive info">Show</button>
                                     </td>
                                 </tr>
                                 @empty
@@ -433,27 +433,29 @@ document.getElementById('printEmployee').addEventListener('click', function() {
 // Search functionality
 // Search is handled server-side via GET form submission.
 
-// Export to Excel functionality
-document.getElementById('exportExcel').addEventListener('click', function() {
+// Export to CSV functionality
+document.getElementById('exportCsv').addEventListener('click', function() {
     const searchTerm = document.getElementById('searchInput') ? document.getElementById('searchInput').value : '';
     
-    // Redirect to export endpoint with search parameter
-    const url = `/payroll/employee-details/export${searchTerm ? '?search=' + encodeURIComponent(searchTerm) : ''}`;
+    // Redirect to CSV export endpoint with search parameter
+    const url = `/payroll/employee-details/export/csv${searchTerm ? '?search=' + encodeURIComponent(searchTerm) : ''}`;
     
     // Create a hidden link and trigger download
     const link = document.createElement('a');
     link.href = url;
+    link.download = 'employee-details.csv'; // Force download
     link.style.display = 'none';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    showNotification('Employee details exported successfully!', 'success');
+    showNotification('Employee details exported to CSV successfully!', 'success');
 });
 
-// Per-row salary Show/Hide toggle (hidden by default)
+// Per-row sensitive info Show/Hide toggle (salary + ATM, hidden by default)
 document.addEventListener('DOMContentLoaded', function () {
     const salaryCells = document.querySelectorAll('.salary-cell');
+    const atmCells = document.querySelectorAll('.atm-cell');
 
     // Ensure salaries start hidden (line only)
     salaryCells.forEach(function (cell) {
@@ -465,33 +467,52 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Attach click handler to each toggle button
-    document.querySelectorAll('.toggle-salary-btn').forEach(function (btn) {
+    // Ensure ATM numbers start hidden (line only)
+    atmCells.forEach(function (cell) {
+        const valueSpan = cell.querySelector('.atm-value');
+        const hiddenSpan = cell.querySelector('.atm-hidden');
+        if (valueSpan && hiddenSpan) {
+            valueSpan.classList.add('d-none');
+            hiddenSpan.classList.remove('d-none');
+        }
+    });
+
+    // Attach click handler to each sensitive info toggle button
+    document.querySelectorAll('.toggle-sensitive-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
             const row = this.closest('tr');
             if (!row) return;
 
-            const cell = row.querySelector('.salary-cell');
-            if (!cell) return;
+            const salaryCell = row.querySelector('.salary-cell');
+            const atmCell = row.querySelector('.atm-cell');
+            
+            if (!salaryCell || !atmCell) return;
 
-            const valueSpan = cell.querySelector('.salary-value');
-            const hiddenSpan = cell.querySelector('.salary-hidden');
-            if (!valueSpan || !hiddenSpan) return;
+            const salaryValue = salaryCell.querySelector('.salary-value');
+            const salaryHidden = salaryCell.querySelector('.salary-hidden');
+            const atmValue = atmCell.querySelector('.atm-value');
+            const atmHidden = atmCell.querySelector('.atm-hidden');
+            
+            if (!salaryValue || !salaryHidden || !atmValue || !atmHidden) return;
 
-            const isHidden = valueSpan.classList.contains('d-none');
+            const isHidden = salaryValue.classList.contains('d-none');
 
             if (isHidden) {
-                // Show salary
-                valueSpan.classList.remove('d-none');
-                hiddenSpan.classList.add('d-none');
+                // Show both salary and ATM
+                salaryValue.classList.remove('d-none');
+                salaryHidden.classList.add('d-none');
+                atmValue.classList.remove('d-none');
+                atmHidden.classList.add('d-none');
                 this.textContent = 'Hide';
-                this.title = 'Hide salary';
+                this.title = 'Hide sensitive info';
             } else {
-                // Hide salary
-                valueSpan.classList.add('d-none');
-                hiddenSpan.classList.remove('d-none');
+                // Hide both salary and ATM
+                salaryValue.classList.add('d-none');
+                salaryHidden.classList.remove('d-none');
+                atmValue.classList.add('d-none');
+                atmHidden.classList.remove('d-none');
                 this.textContent = 'Show';
-                this.title = 'Show salary';
+                this.title = 'Show sensitive info';
             }
         });
     });
